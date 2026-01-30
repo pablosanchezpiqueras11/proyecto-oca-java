@@ -60,11 +60,11 @@
     <div class="register-card">
         <h2>📝 Crear Cuenta</h2>
         
-        <form action="RegistroServlet" method="post">
+        <form id="formRegistro" action="RegistroServlet" method="post">
             <input type="text" name="usuario" placeholder="Elige tu nombre de usuario" required>
             
-            <input type="password" name="pass1" placeholder="Contraseña" required>
-            <input type="password" name="pass2" placeholder="Repite la contraseña" required>
+            <input type="password" id="pass1" name="pass1" placeholder="Contraseña" required>
+            <input type="password" id="pass2" name="pass2" placeholder="Repite la contraseña" required>
             
             <button type="submit" class="btn-registro">REGISTRARSE</button>
         </form>
@@ -73,6 +73,31 @@
             ¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a>
         </div>
     </div>
+
+    <script>
+        // Buscamos el formulario y las cajas de texto por su ID
+        const formulario = document.getElementById('formRegistro');
+        const pass1 = document.getElementById('pass1');
+        const pass2 = document.getElementById('pass2');
+
+        // Cuando alguien intente enviar (submit) el formulario...
+        formulario.addEventListener('submit', function(event) {
+            
+            // Comprobamos si las contraseñas son distintas
+            if (pass1.value !== pass2.value) {
+                // ¡ALTO! Detenemos el envío para que no vaya al servidor
+                event.preventDefault();
+                
+                // Mostramos un aviso
+                alert("❌ ¡Las contraseñas no coinciden! Inténtalo de nuevo.");
+                
+                // Borramos la segunda caja para que la vuelva a escribir
+                pass2.value = "";
+                pass2.focus(); // Ponemos el cursor ahí automáticamente
+            }
+            // Si son iguales, el código deja pasar el envío normalmente.
+        });
+    </script>
 
 </body>
 </html>
