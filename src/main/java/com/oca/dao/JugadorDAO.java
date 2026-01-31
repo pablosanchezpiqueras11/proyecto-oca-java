@@ -1,40 +1,63 @@
 package com.oca.dao;
 
-import com.oca.modelo.Jugador;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.oca.modelo.Jugador;
 
 public class JugadorDAO {
 
-    // Método para guardar un nuevo jugador en la BD
+    // MÉTODO 1: REGISTRAR 
     public boolean registrarJugador(Jugador jugador) {
         boolean registrado = false;
-        
-        // La sentencia SQL con interrogaciones (para seguridad)
         String sql = "INSERT INTO jugadores (nombre, password, partidas_ganadas) VALUES (?, ?, 0)";
         
-        // Usamos try-with-resources para que la conexión se cierre sola
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
-            // Sustituimos las interrogaciones por los datos del jugador
             ps.setString(1, jugador.getNombre());
-            ps.setString(2, jugador.getPassword()); // En el futuro esto debería ir encriptado
+            ps.setString(2, jugador.getPassword());
             
-            // Ejecutamos la orden
-            int filasAfectadas = ps.executeUpdate();
-            
-            // Si ha guardado al menos una fila, es que ha ido bien
-            if (filasAfectadas > 0) {
+            if (ps.executeUpdate() > 0) {
                 registrado = true;
             }
-
         } catch (SQLException e) {
-            System.out.println("Error al registrar jugador: " + e.getMessage());
+            System.out.println("Error al registrar: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return registrado;
+    }
+
+    // MÉTODO 2: LOGIN 
+    public Jugador login(String usuario, String password) {
+        Jugador jugador = null;
+        String sql = "SELECT * FROM jugadores WHERE nombre = ? AND password = ?";
+        
+        try (Connection con = Conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, usuario);
+            ps.setString(2, password);
+            
+            // Ejecutamos la consulta y obtenemos los resultados
+            ResultSet rs = ps.executeQuery();
+            
+            // Si hay un resultado, es que el usuario y contraseña son correctos
+            if (rs.next()) {
+                jugador = new Jugador();
+                jugador.setId(rs.getInt("id"));
+                jugador.setNombre(rs.getString("nombre"));
+                jugador.setPassword(rs.getString("password"));
+                jugador.setPartidasGanadas(rs.getInt("partidas_ganadas"));
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("Error en login: " + e.getMessage());
             e.printStackTrace();
         }
         
-        return registrado;
+        return jugador; // Devuelve el jugador si existe, o null si no existe
     }
 }

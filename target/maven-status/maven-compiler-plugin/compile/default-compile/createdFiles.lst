@@ -1,0 +1,6 @@
+com\oca\controller\LoginServlet.class
+com\oca\controller\RegistroServlet.class
+com\oca\dao\Conexion.class
+com\oca\modelo\Jugador.class
+com\oca\modelo\Partida.class
+com\oca\dao\JugadorDAO.class

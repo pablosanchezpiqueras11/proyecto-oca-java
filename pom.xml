@@ -52,10 +52,9 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>11.0.15</version>
-                <configuration>
+                <version>11.0.15</version> <configuration>
                     <webApp>
-                        <contextPath>/oca</contextPath>
+                        <contextPath>/</contextPath>
                     </webApp>
                 </configuration>
             </plugin>
