@@ -29,12 +29,13 @@ public class LoginServlet extends HttpServlet {
         
         if (jugador != null) {
             // 3. ¡Login correcto!
-            // Creamos una "Sesión" para recordar al usuario mientras navega
             HttpSession session = request.getSession();
-            session.setAttribute("jugadorLogueado", jugador);
             
-            // Lo mandamos a la portada (o al panel de juego)
-            response.sendRedirect("index.html"); 
+            // OJO AQUÍ: Cambiamos "jugadorLogueado" por "jugador" para que coincida con el Lobby
+            session.setAttribute("jugador", jugador); 
+            
+            // Y AQUÍ: En vez de index.html, lo mandamos al servlet "lobby"
+            response.sendRedirect("lobby"); 
         } else {
             // 4. Login incorrecto
             // Lo devolvemos al login con un aviso de error

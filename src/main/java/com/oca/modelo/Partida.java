@@ -1,29 +1,50 @@
 package com.oca.modelo;
 
-public class Partida {
-    private int idPartida;
-    private String nombre; // Nombre de la sala, ej: "Sala 1"
-    private int idEstado;  // 1=No iniciada, 2=En juego...
+import java.sql.Timestamp;
 
+public class Partida {
+    private int id;
+    private String nombre;
+    private String estado;      // Ahora es String: "ESPERANDO", "JUGANDO", "TERMINADA"
+    private int idTurnoActual;  // ID del jugador al que le toca
+    private int idGanador;      // ID del ganador
+    private Timestamp fechaCreacion;
+
+    // Constructor vacío
     public Partida() {}
 
+    // Constructor básico para crear partida nueva
     public Partida(String nombre) {
         this.nombre = nombre;
-        this.idEstado = 1; // Por defecto nace "No iniciada"
+        this.estado = "ESPERANDO"; // Valor por defecto
     }
 
-    public Partida(int idPartida, String nombre, int idEstado) {
-        this.idPartida = idPartida;
+    // Constructor completo
+    public Partida(int id, String nombre, String estado, int idTurnoActual, int idGanador, Timestamp fechaCreacion) {
+        this.id = id;
         this.nombre = nombre;
-        this.idEstado = idEstado;
+        this.estado = estado;
+        this.idTurnoActual = idTurnoActual;
+        this.idGanador = idGanador;
+        this.fechaCreacion = fechaCreacion;
     }
 
-    public int getIdPartida() { return idPartida; }
-    public void setIdPartida(int idPartida) { this.idPartida = idPartida; }
+    // Getters y Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public int getIdEstado() { return idEstado; }
-    public void setIdEstado(int idEstado) { this.idEstado = idEstado; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public int getIdTurnoActual() { return idTurnoActual; }
+    public void setIdTurnoActual(int idTurnoActual) { this.idTurnoActual = idTurnoActual; }
+
+    public int getIdGanador() { return idGanador; }
+    public void setIdGanador(int idGanador) { this.idGanador = idGanador; }
+
+    public Timestamp getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Timestamp fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }
