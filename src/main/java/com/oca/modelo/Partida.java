@@ -9,6 +9,7 @@ public class Partida {
     private int idTurnoActual;  // ID del jugador al que le toca
     private int idGanador;      // ID del ganador
     private Timestamp fechaCreacion;
+    private int jugadoresActuales;
 
     // Constructor vacío
     public Partida() {}
@@ -47,4 +48,12 @@ public class Partida {
 
     public Timestamp getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(Timestamp fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public int getJugadoresActuales() {
+    return jugadoresActuales;
+    }
+
+    public void setJugadoresActuales(int jugadoresActuales) {
+    this.jugadoresActuales = jugadoresActuales;
+    }
 }
