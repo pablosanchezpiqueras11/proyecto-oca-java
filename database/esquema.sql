@@ -1,48 +1,143 @@
--- 1. TABLAS DE REFERENCIA (Para tus IdEstado e IdTipo)
-CREATE TABLE Estados (
-    IdEstado INT PRIMARY KEY,
-    Descripcion VARCHAR(50) NOT NULL -- Ej: 1='No iniciada', 2='En juego', 3='Finalizada'
-);
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 02-02-2026 a las 18:19:32
+-- Versión del servidor: 10.4.32-MariaDB
+-- Versión de PHP: 8.2.12
 
-CREATE TABLE TipoCasilla (
-    IdTipo INT PRIMARY KEY,
-    Nombre VARCHAR(50) NOT NULL -- Ej: 1='Normal', 2='Oca', 3='Puente', 4='Muerte'
-);
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
--- 2. TABLA JUGADORES (Tu esquema: IdJugador, Nombre, Password)
-CREATE TABLE Jugadores (
-    IdJugador INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(50) NOT NULL UNIQUE,
-    Password VARCHAR(255) NOT NULL -- Hash
-);
 
--- 3. TABLA PARTIDAS (Tu esquema: IdPartida, Nombre, IdEstado)
-CREATE TABLE Partidas (
-    IdPartida INT AUTO_INCREMENT PRIMARY KEY,
-    Nombre VARCHAR(100), -- Nombre de la sala, ej: "Sala de Juan"
-    IdEstado INT DEFAULT 1,
-    FOREIGN KEY (IdEstado) REFERENCES Estados(IdEstado)
-);
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
--- 4. TABLA DETALLES_PARTIDA (La clave de todo: vincula jugador y partida)
-CREATE TABLE DetallesPartida (
-    IdPartida INT,
-    IdJugador INT,
-    Casilla INT DEFAULT 1,    -- En qué casilla está
-    Turno INT,                -- Orden de tiro (1º, 2º, 3º...)
-    Bloqueos INT DEFAULT 0,   -- Turnos sin tirar (por Pozo, Posada...)
-    PRIMARY KEY (IdPartida, IdJugador),
-    FOREIGN KEY (IdPartida) REFERENCES Partidas(IdPartida),
-    FOREIGN KEY (IdJugador) REFERENCES Jugadores(IdJugador)
-);
+--
+-- Base de datos: `proyecto_oca`
+--
 
--- 5. TABLA TABLERO (Define qué es cada casilla del 1 al 63)
-CREATE TABLE Tablero (
-    NumeroCasilla INT PRIMARY KEY, -- Del 1 al 63
-    IdTipo INT,
-    FOREIGN KEY (IdTipo) REFERENCES TipoCasilla(IdTipo)
-);
+-- --------------------------------------------------------
 
--- DATOS INICIALES NECESARIOS (Ejecutar esto una vez)
-INSERT INTO Estados VALUES (1, 'No Iniciada'), (2, 'En Juego'), (3, 'Finalizada');
-INSERT INTO TipoCasilla VALUES (1, 'Normal'), (2, 'Oca'), (3, 'Puente'), (4, 'Posada'), (5, 'Pozo'), (6, 'Laberinto'), (7, 'Carcel'), (8, 'Calavera');
+--
+-- Estructura de tabla para la tabla `jugadores`
+--
+
+DROP TABLE IF EXISTS `jugadores`;
+CREATE TABLE `jugadores` (
+  `id` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `password` varchar(50) NOT NULL,
+  `partidas_ganadas` int(11) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `jugadores`
+--
+
+INSERT INTO `jugadores` (`id`, `nombre`, `password`, `partidas_ganadas`) VALUES
+(1, 'Campeon', '1234', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `partidas`
+--
+
+DROP TABLE IF EXISTS `partidas`;
+CREATE TABLE `partidas` (
+  `id` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `estado` varchar(20) DEFAULT 'ESPERANDO',
+  `id_turno_actual` int(11) DEFAULT NULL,
+  `id_ganador` int(11) DEFAULT NULL,
+  `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `partidas`
+--
+
+INSERT INTO `partidas` (`id`, `nombre`, `estado`, `id_turno_actual`, `id_ganador`, `fecha_creacion`) VALUES
+(1, 'PARTIDA_PRUEBA', 'ESPERANDO', 1, NULL, '2026-02-01 20:22:27');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `partidas_jugadores`
+--
+
+DROP TABLE IF EXISTS `partidas_jugadores`;
+CREATE TABLE `partidas_jugadores` (
+  `id_partida` int(11) NOT NULL,
+  `id_jugador` int(11) NOT NULL,
+  `casilla` int(11) DEFAULT 1,
+  `orden` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `partidas_jugadores`
+--
+
+INSERT INTO `partidas_jugadores` (`id_partida`, `id_jugador`, `casilla`, `orden`) VALUES
+(1, 1, 1, 1);
+
+--
+-- Índices para tablas volcadas
+--
+
+--
+-- Indices de la tabla `jugadores`
+--
+ALTER TABLE `jugadores`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `nombre` (`nombre`);
+
+--
+-- Indices de la tabla `partidas`
+--
+ALTER TABLE `partidas`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `partidas_jugadores`
+--
+ALTER TABLE `partidas_jugadores`
+  ADD PRIMARY KEY (`id_partida`,`id_jugador`),
+  ADD KEY `id_jugador` (`id_jugador`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `jugadores`
+--
+ALTER TABLE `jugadores`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT de la tabla `partidas`
+--
+ALTER TABLE `partidas`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `partidas_jugadores`
+--
+ALTER TABLE `partidas_jugadores`
+  ADD CONSTRAINT `partidas_jugadores_ibfk_1` FOREIGN KEY (`id_partida`) REFERENCES `partidas` (`id`),
+  ADD CONSTRAINT `partidas_jugadores_ibfk_2` FOREIGN KEY (`id_jugador`) REFERENCES `jugadores` (`id`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
