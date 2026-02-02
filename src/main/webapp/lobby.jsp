@@ -52,6 +52,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>Jugadores</th>
                     <th>Nombre de la Sala</th>
                     <th>Estado</th>
                     <th>Acción</th>
@@ -62,6 +63,7 @@
                 <tr>
                     <td><%= p.getNombre() %></td>
                     <td><%= p.getEstado() %></td>
+                    <td><%= p.getJugadoresActuales() %> / 4</td>
                     <td>
                         <a href="unirse?idPartida=<%= p.getId() %>" class="btn">Unirse</a>
                     </td>

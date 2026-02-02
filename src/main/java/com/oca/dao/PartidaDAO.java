@@ -67,7 +67,8 @@ public class PartidaDAO {
     // 2. LISTAR PARTIDAS EN ESPERA (Para el Lobby)
     public List<Partida> obtenerPartidasEnEspera() {
         List<Partida> lista = new ArrayList<>();
-        String sql = "SELECT * FROM partidas WHERE estado = 'ESPERANDO'";
+        String sql = "SELECT p.*, (SELECT COUNT(*) FROM partidas_jugadores WHERE id_partida = p.id) as total_jugadores " +
+             "FROM partidas p WHERE p.estado = 'ESPERANDO'";
 
         // Aquí usamos try-with-resources igual que en tu JugadorDAO
         try (Connection conn = Conexion.getConexion();
@@ -76,6 +77,7 @@ public class PartidaDAO {
 
             while (rs.next()) {
                 Partida p = new Partida();
+                p.setJugadoresActuales(rs.getInt("total_jugadores"));
                 p.setId(rs.getInt("id"));
                 p.setNombre(rs.getString("nombre"));
                 p.setEstado(rs.getString("estado"));
@@ -87,5 +89,54 @@ public class PartidaDAO {
             e.printStackTrace();
         }
         return lista;
+    }
+    // Método para unirse a una partida existente
+    public boolean unirseAPartida(int idPartida, int idJugador) {
+        Connection conn = null;
+        PreparedStatement stmtVerificar = null;
+        PreparedStatement stmtInsertar = null;
+        ResultSet rs = null;
+        boolean exito = false;
+
+        try {
+            conn = Conexion.getConexion();
+            
+            // 1. Verificamos cuántos jugadores hay ya
+            String sqlVerificar = "SELECT COUNT(*) FROM partidas_jugadores WHERE id_partida = ?";
+            stmtVerificar = conn.prepareStatement(sqlVerificar);
+            stmtVerificar.setInt(1, idPartida);
+            rs = stmtVerificar.executeQuery();
+            
+            if (rs.next()) {
+                int jugadoresActuales = rs.getInt(1);
+                
+                // Si hay menos de 4, permitimos entrar
+                if (jugadoresActuales < 4) {
+                    
+                    // 2. Insertamos al jugador en la mesa
+                    // IMPORTANTE: 'casilla' empieza en 1, 'orden' podríamos calcularlo pero lo dejamos NULL por ahora o secuencial
+                    String sqlInsertar = "INSERT INTO partidas_jugadores (id_partida, id_jugador, casilla) VALUES (?, ?, 1)";
+                    stmtInsertar = conn.prepareStatement(sqlInsertar);
+                    stmtInsertar.setInt(1, idPartida);
+                    stmtInsertar.setInt(2, idJugador);
+                    
+                    int filasAfectadas = stmtInsertar.executeUpdate();
+                    if (filasAfectadas > 0) {
+                        exito = true;
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Cerramos recursos con cuidado para no dejar conexiones abiertas
+            try { if (rs != null) rs.close(); } catch (Exception e) {};
+            try { if (stmtVerificar != null) stmtVerificar.close(); } catch (Exception e) {};
+            try { if (stmtInsertar != null) stmtInsertar.close(); } catch (Exception e) {};
+            try { if (conn != null) conn.close(); } catch (Exception e) {};
+        }
+        
+        return exito;
     }
 }
