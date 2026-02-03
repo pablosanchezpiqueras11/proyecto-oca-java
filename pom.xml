@@ -33,12 +33,13 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
-        
+
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
             <version>3.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
@@ -48,16 +49,26 @@
 
     <build>
         <finalName>la-oca</finalName>
+
         <plugins>
+            <!--modificacion del puerto-->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>11.0.15</version> <configuration>
+                <version>11.0.15</version>
+
+                <configuration>
                     <webApp>
                         <contextPath>/</contextPath>
                     </webApp>
+
+                    <!-- Puerto cambiado para evitar "Address already in use" -->
+                    <httpConnector>
+                        <port>9090</port>
+                    </httpConnector>
                 </configuration>
             </plugin>
+            <!--modificacion del puerto-->
         </plugins>
     </build>
 </project>
