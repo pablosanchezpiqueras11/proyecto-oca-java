@@ -40,8 +40,11 @@ public class UnirsePartidaServlet extends HttpServlet {
             boolean unido = dao.unirseAPartida(idPartida, jugador.getId());
             
             if (unido) {
-                // Éxito: Volvemos al lobby (o podríamos ir ya al tablero)
-                // Usamos un parámetro ?msg para mostrar un mensajito si quieres
+            // ✅ GUARDAMOS LA ID EN LA SESIÓN
+                // Esto es vital para que JuegoServlet sepa en qué partida estás jugando luego
+                session.setAttribute("idPartida", idPartida);
+                
+                // Éxito: Volvemos al lobby con el mensaje
                 response.sendRedirect("lobby?mensaje=unido");
             } else {
                 // Fallo: Estaba llena o error
