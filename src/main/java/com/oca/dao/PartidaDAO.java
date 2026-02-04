@@ -303,4 +303,29 @@ public class PartidaDAO {
             e.printStackTrace();
         }
     }
+    // 8. OBTENER POSICIONES DE TODOS LOS JUGADORES
+    // Este método devuelve la lista para que el tablero sepa dónde pintar las fichas
+    public List<com.oca.modelo.PartidaJugador> obtenerPosiciones(int idPartida) {
+        List<com.oca.modelo.PartidaJugador> lista = new ArrayList<>();
+        String sql = "SELECT * FROM partidas_jugadores WHERE id_partida = ?";
+        
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, idPartida);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                com.oca.modelo.PartidaJugador pj = new com.oca.modelo.PartidaJugador();
+                pj.setIdPartida(rs.getInt("id_partida"));
+                pj.setIdJugador(rs.getInt("id_jugador"));
+                pj.setCasilla(rs.getInt("casilla"));
+                pj.setOrden(rs.getInt("orden"));
+                lista.add(pj);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
 }
