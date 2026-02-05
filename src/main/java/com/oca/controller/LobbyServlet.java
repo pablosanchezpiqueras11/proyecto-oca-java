@@ -1,5 +1,8 @@
 package com.oca.controller;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.oca.dao.PartidaDAO;
 import com.oca.modelo.Jugador;
 import com.oca.modelo.Partida;
@@ -10,8 +13,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/lobby")
 public class LobbyServlet extends HttpServlet {
@@ -36,13 +37,19 @@ public class LobbyServlet extends HttpServlet {
             return;
         }
 
-        // 2. Pedir al DAO la lista de partidas disponibles
-        List<Partida> listaPartidas = partidaDAO.obtenerPartidasEnEspera();
+        // --- CAMBIO PRINCIPAL AQUÍ ---
+        
+        // 2. Cargar "Mis Partidas" (Partidas donde el usuario YA está jugando)
+        // Esto usa el método nuevo que añadimos al DAO
+        List<Partida> misPartidas = partidaDAO.obtenerMisPartidas(jugador.getId());
+        request.setAttribute("misPartidas", misPartidas);
 
-        // 3. Meter la lista en la "mochila" (request) para enviarla al HTML/JSP
-        request.setAttribute("listaPartidas", listaPartidas);
+        // 3. Cargar "Partidas Disponibles" (Partidas vacías donde el usuario NO está)
+        // Esto usa el otro método nuevo del DAO
+        List<Partida> partidasDisponibles = partidaDAO.obtenerPartidasDisponibles(jugador.getId());
+        request.setAttribute("partidasDisponibles", partidasDisponibles);
 
-        // 4. Mostrar la pantalla del lobby (Nota: usaremos .jsp para poder mostrar la lista dinámica)
+        // 4. Mostrar la pantalla del lobby
         request.getRequestDispatcher("lobby.jsp").forward(request, response);
     }
 
@@ -61,7 +68,7 @@ public class LobbyServlet extends HttpServlet {
             boolean creada = partidaDAO.crearPartida(nombrePartida, jugador.getId());
 
             if (creada) {
-                // Si se crea bien, recargamos el lobby para que aparezca en la lista
+                // Si se crea bien, recargamos el lobby para que aparezca en las listas
                 response.sendRedirect("lobby"); 
             } else {
                 // Si falla, mandamos un error (opcional)

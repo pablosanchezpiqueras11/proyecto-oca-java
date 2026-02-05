@@ -9,14 +9,25 @@
     <meta charset="UTF-8">
     <title>Sala de Espera (Lobby)</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f0f8ff; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h2 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        .btn { padding: 5px 10px; background: #28a745; color: white; text-decoration: none; border-radius: 4px; }
-        .crear-box { background: #eee; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f0f8ff; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #2c3e50; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #2980b9; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .btn { padding: 8px 15px; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
+        .btn-crear { background: #27ae60; border: none; padding: 10px 20px; cursor: pointer; font-size: 1rem; }
+        .btn-unirse { background: #e67e22; }
+        .btn-jugar { background: #27ae60; }
+        
+        .crear-box { background: #ecf0f1; padding: 20px; margin-bottom: 30px; border-radius: 8px; display: flex; align-items: center; gap: 10px; }
+        .crear-box input { padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; flex-grow: 1; }
+
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .user-menu a { margin-left: 15px; color: #7f8c8d; text-decoration: none; }
+        .user-menu a:hover { color: #2980b9; }
     </style>
 </head>
 <body>
@@ -24,59 +35,89 @@
 <div class="container">
     <%
         Jugador jugador = (Jugador) session.getAttribute("jugador");
-        if (jugador != null) {
+        if (jugador == null) { response.sendRedirect("login.html"); return; }
     %>
-        <h1>Hola, <%= jugador.getNombre() %> 👋</h1>
-    <% } else { %>
-        <h1>Hola, Invitado</h1>
-    <% } %>
+    
+    <div class="header-top">
+        <h1>🦆 Lobby Oca</h1>
+        <div class="user-menu">
+            <span>Hola, <b><%= jugador.getNombre() %></b></span>
+            <a href="perfil.jsp">👤 Mi Perfil</a>
+            <a href="index.html">🚪 Salir</a>
+        </div>
+    </div>
 
     <div class="crear-box">
-        <h3>Crear Nueva Partida</h3>
-        <form action="lobby" method="post">
-            <input type="text" name="nombrePartida" placeholder="Nombre de la sala (ej: Mesa 1)" required>
-            <button type="submit">Crear Partida</button>
+        <form action="lobby" method="post" style="width: 100%; display:flex; gap:10px;">
+            <input type="text" name="nombrePartida" placeholder="Nombre de la nueva sala..." required>
+            <button type="submit" class="btn btn-crear">➕ Crear Partida</button>
         </form>
     </div>
 
-    <hr>
-
-    <h3>Partidas Disponibles</h3>
-    
+    <h3>▶️ Mis Partidas Activas</h3>
     <%
-        // Recuperamos la lista que nos envió el Servlet
-        List<Partida> lista = (List<Partida>) request.getAttribute("listaPartidas");
-        
-        if (lista != null && !lista.isEmpty()) {
+        List<Partida> misPartidas = (List<Partida>) request.getAttribute("misPartidas");
+        if (misPartidas != null && !misPartidas.isEmpty()) {
     %>
         <table>
             <thead>
                 <tr>
-                    <th>Jugadores</th>
-                    <th>Nombre de la Sala</th>
+                    <th>Sala</th>
                     <th>Estado</th>
+                    <th>Jugadores</th>
                     <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
-                <% for (Partida p : lista) { %>
+                <% for (Partida p : misPartidas) { %>
                 <tr>
                     <td><%= p.getNombre() %></td>
-                    <td><%= p.getEstado() %></td>
-                    <td><%= p.getJugadoresActuales() %> / 4</td>
+                    <td><span style="color: green; font-weight: bold;"><%= p.getEstado() %></span></td>
+                    <td><%= p.getJugadoresActuales() %>/4</td>
                     <td>
-                        <a href="unirse?idPartida=<%= p.getId() %>" class="btn">Unirse</a>
+                        <a href="unirse?idPartida=<%= p.getId() %>" class="btn btn-jugar">ENTRAR 🎲</a>
                     </td>
                 </tr>
                 <% } %>
             </tbody>
         </table>
     <% } else { %>
-        <p><i>No hay partidas creadas. ¡Sé el primero en crear una!</i></p>
+        <p><i>No estás jugando ninguna partida actualmente.</i></p>
     <% } %>
 
-    <br>
-    <a href="perfil.jsp">Ver mi Perfil</a> | <a href="index.html">Cerrar Sesión</a>
+    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+    <h3>🔍 Partidas Disponibles</h3>
+    <%
+        List<Partida> disponibles = (List<Partida>) request.getAttribute("partidasDisponibles");
+        if (disponibles != null && !disponibles.isEmpty()) {
+    %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sala</th>
+                    <th>Estado</th>
+                    <th>Huecos</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% for (Partida p : disponibles) { %>
+                <tr>
+                    <td><%= p.getNombre() %></td>
+                    <td><%= p.getEstado() %></td>
+                    <td><%= p.getJugadoresActuales() %>/4</td>
+                    <td>
+                        <a href="unirse?idPartida=<%= p.getId() %>" class="btn btn-unirse">Unirse 👋</a>
+                    </td>
+                </tr>
+                <% } %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p><i>No hay partidas nuevas disponibles. ¡Crea una tú mismo!</i></p>
+    <% } %>
+
 </div>
 
 </body>

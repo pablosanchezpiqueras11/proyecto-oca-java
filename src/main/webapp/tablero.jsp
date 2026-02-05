@@ -5,7 +5,6 @@
 
 <%
     // RECUPERAR DATOS REALES DE LA BASE DE DATOS
-    // Esto es lo que permite que las fichas se muevan de verdad
     Integer idPartida = (Integer) session.getAttribute("idPartida");
     List<PartidaJugador> posiciones = null;
     
@@ -19,6 +18,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta http-equiv="refresh" content="5">
+
   <title>Tablero Oca</title>
   <style>
     :root{
@@ -114,9 +116,7 @@
     <div class="board-wrap">
       <img class="board-img" src="assets/tablero.jpg" alt="Tablero Oca" />
 
-      <!-- viewBox: tus coordenadas están en 0..1000 -->
       <svg class="overlay" id="overlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-        <!-- ✅ SOLO dejamos fichas; las casillas se crean por JS -->
         <circle class="token" id="p1" cx="172" cy="891" r="18"></circle>
         <circle class="token" id="p2" cx="190" cy="891" r="18"></circle>
       </svg>
@@ -124,7 +124,6 @@
   </div>
 
   <script>
-    // ✅ MAPA COMPLETO 1..63
     const posMap = {
       "1": {"cx":172,"cy":885},
       "2": {"cx":374,"cy":885},
@@ -190,30 +189,24 @@
       "62":{"cx":376,"cy":578},
       "63":{"cx":495,"cy":448}
     };
-
     const overlay = document.getElementById("overlay");
-    const CELL_R = 26; // radio de cada casilla clickable
+    const CELL_R = 26; 
 
-    // ✅ Crear 63 casillas en el SVG (según posMap)
     function renderCells(){
-      // Si recargas, evita duplicados: elimina casillas anteriores
       overlay.querySelectorAll(".cell").forEach(c => c.remove());
-
       for (let i = 1; i <= 63; i++){
         const p = posMap[String(i)];
         if (!p) continue;
-
         const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
         c.setAttribute("class","cell");
         c.dataset.pos = String(i);
         c.setAttribute("cx", p.cx);
         c.setAttribute("cy", p.cy);
         c.setAttribute("r", CELL_R);
-        overlay.insertBefore(c, overlay.firstChild); // por debajo de las fichas
+        overlay.insertBefore(c, overlay.firstChild);
       }
     }
 
-    // ✅ Mover ficha a una casilla
     function moveToken(tokenId, pos, dx=0, dy=0){
       const p = posMap[String(pos)];
       if(!p) return;
@@ -222,25 +215,19 @@
       t.setAttribute("cy", p.cy + dy);
     }
 
-    // Pintamos casillas
     renderCells();
 
-    // ✅ BUCLE MÁGICO JAVA -> JAVASCRIPT
-    // Esto escribe una línea de código JS por cada jugador que haya en la BBDD
     <% 
     if (posiciones != null) {
         for (PartidaJugador pj : posiciones) { 
-            // Calcula un pequeño desplazamiento para que no se monten una encima de otra
             int desplazamiento = (pj.getOrden() % 2 == 0) ? 10 : -10;
     %>
-        // Mueve la ficha p1, p2, etc. a su casilla real
         moveToken("p<%= pj.getOrden() %>", <%= pj.getCasilla() %>, <%= desplazamiento %>, 0);
     <% 
         } 
     } 
     %>
 
-    // ✅ Debug útil: click en una casilla => mover fichas ahí
     overlay.addEventListener("click", (e) => {
       const pos = e.target?.dataset?.pos;
       if (!pos) return;
@@ -248,7 +235,6 @@
       moveToken("p2", pos, +10, 0);
       console.log("Casilla:", pos);
     });
-    
   </script>
   <form action="JuegoServlet" method="post" style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
     <input type="hidden" name="accion" value="tirar">
