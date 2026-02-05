@@ -328,4 +328,16 @@ public class PartidaDAO {
         }
         return lista;
     }
+    // 9. TERMINAR LA PARTIDA
+    public void terminarPartida(int idPartida, int idGanador) {
+        String sql = "UPDATE partidas SET estado = 'TERMINADA', id_ganador = ? WHERE id = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idGanador);
+            ps.setInt(2, idPartida);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

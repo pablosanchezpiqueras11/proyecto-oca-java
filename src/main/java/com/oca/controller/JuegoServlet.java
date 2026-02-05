@@ -85,13 +85,25 @@ public class JuegoServlet extends HttpServlet {
                 if (repiteTurno) {
                     mensaje = "¡Tiras otra vez! (Dado: " + dado + ")";
                 } else {
-                    // Si no repite y no ha ganado todavía, pasa el turno
+                    // Si no ha llegado a la meta (63), pasa turno
                     if (casillaFinal < 63) {
                         partidaDAO.pasarTurno(idPartida);
                         mensaje = "Avanzas a la casilla " + casillaFinal + ". Turno del siguiente.";
                     } else {
-                         // ¡HA GANADO! (Aquí podrías poner el estado de la partida a TERMINADA)
+                         // 🏆 ¡HA GANADO! (casillaFinal >= 63)
                          mensaje = "¡FELICIDADES! HAS GANADO LA PARTIDA 🏆";
+                         
+                         // 1. Cerrar la partida en la Base de Datos
+                         partidaDAO.terminarPartida(idPartida, jugador.getId());
+                         
+                         // 2. Sumar 1 victoria al jugador en la Base de Datos
+                         // (Creamos un DAO de jugador al vuelo porque aquí no lo teníamos)
+                         com.oca.dao.JugadorDAO jugadorDAO = new com.oca.dao.JugadorDAO();
+                         jugadorDAO.sumarVictoria(jugador.getId());
+                         
+                         // 3. Actualizar la sesión (la "mochila")
+                         // Esto sirve para que si vas a tu perfil, veas el punto sumado sin tener que salir y volver a entrar
+                         jugador.setPartidasGanadas(jugador.getPartidasGanadas() + 1);
                     }
                 }
             }

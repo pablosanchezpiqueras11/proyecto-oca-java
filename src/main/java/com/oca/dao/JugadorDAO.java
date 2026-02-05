@@ -60,4 +60,15 @@ public class JugadorDAO {
         
         return jugador; // Devuelve el jugador si existe, o null si no existe
     }
+    // MÉTODO 3: SUMAR VICTORIA
+    public void sumarVictoria(int idJugador) {
+        String sql = "UPDATE jugadores SET partidas_ganadas = partidas_ganadas + 1 WHERE id = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idJugador);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
