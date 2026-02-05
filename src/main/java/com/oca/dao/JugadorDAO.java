@@ -60,4 +60,24 @@ public class JugadorDAO {
         
         return jugador; // Devuelve el jugador si existe, o null si no existe
     }
+    // MÉTODO 3: CAMBIAR CONTRASEÑA
+    public boolean cambiarPassword(int idJugador, String passActual, String passNueva) {
+        boolean cambiado = false;
+        String sql = "UPDATE jugadores SET password = ? WHERE id = ? AND password = ?";
+        
+        try (Connection con = Conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setString(1, passNueva);
+            ps.setInt(2, idJugador);
+            ps.setString(3, passActual);
+            
+            if (ps.executeUpdate() > 0) {
+                cambiado = true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cambiado;
+    }
 }

@@ -45,7 +45,8 @@ public class UnirsePartidaServlet extends HttpServlet {
                 session.setAttribute("idPartida", idPartida);
                 
                 // Éxito: Volvemos al lobby con el mensaje
-                response.sendRedirect("lobby?mensaje=unido");
+                // Vamos directos al tablero
+                response.sendRedirect("tablero.jsp");
             } else {
                 // Fallo: Estaba llena o error
                 response.sendRedirect("lobby?error=llena");

@@ -328,4 +328,69 @@ public class PartidaDAO {
         }
         return lista;
     }
+    // 2.A. OBTENER MIS PARTIDAS (Donde ya participo y no han terminado)
+    public List<Partida> obtenerMisPartidas(int idJugador) {
+        List<Partida> lista = new ArrayList<>();
+        
+        // Consulta SIN ALIAS: Usamos los nombres completos de las tablas
+        String sql = "SELECT partidas.*, " +
+                     "(SELECT COUNT(*) FROM partidas_jugadores WHERE partidas_jugadores.id_partida = partidas.id) as total " +
+                     "FROM partidas " +
+                     "JOIN partidas_jugadores ON partidas.id = partidas_jugadores.id_partida " +
+                     "WHERE partidas_jugadores.id_jugador = ? AND partidas.estado <> 'TERMINADA'";
+
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, idJugador);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Partida p = new Partida();
+                p.setId(rs.getInt("id"));
+                p.setNombre(rs.getString("nombre"));
+                p.setEstado(rs.getString("estado"));
+                p.setJugadoresActuales(rs.getInt("total")); // Usamos el alias 'total' de la subconsulta
+                lista.add(p);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    // 2.B. OBTENER PARTIDAS DISPONIBLES (Hueco libre y NO estoy dentro)
+    public List<Partida> obtenerPartidasDisponibles(int idJugador) {
+        List<Partida> lista = new ArrayList<>();
+        
+        // Consulta SIN ALIAS: Más clara
+        String sql = "SELECT partidas.*, " +
+                     "(SELECT COUNT(*) FROM partidas_jugadores WHERE partidas_jugadores.id_partida = partidas.id) as total " +
+                     "FROM partidas " +
+                     "WHERE partidas.estado = 'ESPERANDO' " +
+                     "AND partidas.id NOT IN (SELECT id_partida FROM partidas_jugadores WHERE id_jugador = ?)";
+
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, idJugador);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                // Solo añadimos a la lista si hay menos de 4 jugadores
+                int total = rs.getInt("total");
+                if (total < 4) {
+                    Partida p = new Partida();
+                    p.setId(rs.getInt("id"));
+                    p.setNombre(rs.getString("nombre"));
+                    p.setEstado(rs.getString("estado"));
+                    p.setJugadoresActuales(total);
+                    lista.add(p);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
 }
