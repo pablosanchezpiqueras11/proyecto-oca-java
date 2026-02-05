@@ -36,24 +36,31 @@
             transition: transform 0.2s;
             text-decoration: none; /* Para que parezca botón aunque sea link */
             box-sizing: border-box;
+            font-weight: bold;
         }
         
-        .btn-crear { background-color: #27ae60; color: white; }
-        .btn-unirse { background-color: #2980b9; color: white; }
+        /* Usamos el verde para registro (acción positiva) */
+        .btn-registro { background-color: #27ae60; color: white; }
+        
+        /* Usamos el naranja para entrar (acción principal) */
         .btn-login { background-color: #e67e22; color: white; }
         
         .btn:hover { transform: scale(1.05); opacity: 0.9; }
+        
+        p { color: #bdc3c7; font-size: 0.9rem; margin-top: 20px;}
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>🦆 La Oca Online</h1>
+        <div style="font-size: 4rem; margin-bottom: 10px;">🦆</div>
+        
+        <h1>La Oca Online</h1>
         
         <a href="login.html" class="btn btn-login">Iniciar Sesión</a>
-        <hr style="border-color: #7f8c8d; margin: 20px 0;">
-        <button class="btn btn-crear" onclick="alert('Función crear pendiente de conectar a Java')">Crear Partida</button>
-        <button class="btn btn-unirse" onclick="alert('Función unirse pendiente de conectar a Java')">Unirse a Partida</button>
+        <a href="registro.html" class="btn btn-registro">Crear Cuenta</a>
+
+        <p>Equipo STGIN © 2026</p>
     </div>
 
 </body>
