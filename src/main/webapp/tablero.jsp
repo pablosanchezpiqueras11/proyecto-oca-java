@@ -92,6 +92,8 @@
     .token{stroke:white;stroke-width:2}
     #p1{fill:#27ae60}
     #p2{fill:#2980b9}
+    #p3{fill:#e74c3c} 
+    #p4{fill:#d4fc10} 
   </style>
 </head>
 <body>
@@ -119,6 +121,8 @@
       <svg class="overlay" id="overlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
         <circle class="token" id="p1" cx="172" cy="891" r="18"></circle>
         <circle class="token" id="p2" cx="190" cy="891" r="18"></circle>
+        <circle class="token" id="p3" cx="172" cy="891" r="18" style="display:none"></circle>
+        <circle class="token" id="p4" cx="190" cy="891" r="18" style="display:none"></circle>
       </svg>
     </div>
   </div>
@@ -220,9 +224,15 @@
     <% 
     if (posiciones != null) {
         for (PartidaJugador pj : posiciones) { 
-            int desplazamiento = (pj.getOrden() % 2 == 0) ? 10 : -10;
+            // Cálculo para que no se monten una encima de otra (Desplazamiento)
+            int desplazamientoX = (pj.getOrden() % 2 != 0) ? -10 : 10; // Impares izq, Pares der
+            int desplazamientoY = (pj.getOrden() > 2) ? 10 : -10;      // 3 y 4 un poco más abajo
     %>
-        moveToken("p<%= pj.getOrden() %>", <%= pj.getCasilla() %>, <%= desplazamiento %>, 0);
+        // 1. Hacemos visible la ficha (quitamos el display:none)
+        document.getElementById("p<%= pj.getOrden() %>").style.display = "block";
+        
+        // 2. La movemos a su sitio
+        moveToken("p<%= pj.getOrden() %>", <%= pj.getCasilla() %>, <%= desplazamientoX %>, <%= desplazamientoY %>);
     <% 
         } 
     } 
