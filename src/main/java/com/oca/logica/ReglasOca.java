@@ -18,7 +18,7 @@ public class ReglasOca {
     public static final int DADOS_1 = 26;
     public static final int POZO = 31;
     public static final int LABERINTO = 42;
-    public static final int CARCEL = 56; // Algunas versiones usan la 52, pero la 56 es común
+    public static final int CARCEL = 52;
     public static final int DADOS_2 = 53;
     public static final int MUERTE = 58;
 
@@ -102,10 +102,10 @@ public class ReglasOca {
      * @param casilla Casilla actual.
      * @return Número de turnos a esperar (0 si no hay castigo).
      */
-    public int getTurnosCastigo(int casilla) {
+    public static int getTurnosCastigo(int casilla) {
         switch (casilla) {
             case POSADA: return 1;  // Pierde 1 turno
-            case POZO:   return 2;  // Pierde 2 turnos (simulado)
+            case POZO:   return -1;  // Pierde 2 turnos (simulado)
             case CARCEL: return 3;  // Pierde 3 turnos
             default:     return 0;
         }

@@ -5,6 +5,7 @@ public class PartidaJugador {
     private int idJugador;
     private int casilla;
     private int orden; // 1, 2, 3 o 4 (para saber el turno)
+    private int turnosCastigo;
 
     public PartidaJugador() {}
 
@@ -27,4 +28,7 @@ public class PartidaJugador {
 
     public int getOrden() { return orden; }
     public void setOrden(int orden) { this.orden = orden; }
+
+    public int getTurnosCastigo() { return turnosCastigo; }
+    public void setTurnosCastigo(int turnosCastigo) { this.turnosCastigo = turnosCastigo; }
 }
