@@ -56,26 +56,53 @@ public class LobbyServlet extends HttpServlet {
     // doPost: SE EJECUTA CUANDO LE DAN AL BOTÓN "CREAR PARTIDA"
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // 1. Obtener usuario de la sesión
+        // 1. Obtener usuario de la sesión (común para todo)
         HttpSession session = request.getSession();
         Jugador jugador = (Jugador) session.getAttribute("jugador");
 
-        if (jugador != null) {
-            // 2. Leer el nombre que le han puesto a la partida en el formulario
-            String nombrePartida = request.getParameter("nombrePartida");
+        if (jugador == null) {
+            response.sendRedirect("index.html"); // Si no está logueado, fuera
+            return;
+        }
 
-            // 3. Llamar al DAO para crearla
+        // 2. ¿QUÉ QUIERE HACER EL USUARIO? (Leemos la "accion")
+        String accion = request.getParameter("accion");
+
+        // CASO A: ELIMINAR PARTIDA 🗑️
+        if ("eliminar".equals(accion)) {
+            // Leemos el ID que viene oculto en el formulario
+            String idStr = request.getParameter("idPartida");
+            if (idStr != null) {
+                int idPartida = Integer.parseInt(idStr);
+                
+                // Llamamos al método de borrar (asegúrate de haber hecho el Paso 3 en el DAO)
+                boolean borrada = partidaDAO.eliminarPartida(idPartida);
+                
+                if (borrada) {
+                    response.sendRedirect("lobby?msg=Partida+eliminada");
+                } else {
+                    response.sendRedirect("lobby?error=No+se+pudo+borrar");
+                }
+            }
+            return; // ¡IMPORTANTE! Cortamos aquí para que no siga
+        }
+
+        // CASO B: CREAR PARTIDA (Lo que tenías antes) 🆕
+        // Si no es eliminar, asumimos que es crear (o puedes poner un 'else if')
+        
+        String nombrePartida = request.getParameter("nombrePartida");
+        
+        // Un pequeño control por si alguien envía el formulario vacío
+        if (nombrePartida != null && !nombrePartida.trim().isEmpty()) {
             boolean creada = partidaDAO.crearPartida(nombrePartida, jugador.getId());
-
             if (creada) {
-                // Si se crea bien, recargamos el lobby para que aparezca en las listas
-                response.sendRedirect("lobby"); 
+                response.sendRedirect("lobby");
             } else {
-                // Si falla, mandamos un error (opcional)
-                response.sendRedirect("lobby?error=true");
+                response.sendRedirect("lobby?error=Error+al+crear");
             }
         } else {
-            response.sendRedirect("index.html");
+            // Si llegan aquí sin nombre ni acción, recargamos el lobby
+            response.sendRedirect("lobby");
         }
     }
 }

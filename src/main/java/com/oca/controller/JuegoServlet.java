@@ -114,5 +114,21 @@ public class JuegoServlet extends HttpServlet {
             String mensajeCodificado = URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
             response.sendRedirect("tablero.jsp?msg=" + mensajeCodificado);
         }
+        // 3. ACCIÓN: INICIAR PARTIDA (Solo para el creador)
+        if ("iniciar".equals(accion)) {
+            
+            // Intentamos iniciarla
+            boolean iniciada = partidaDAO.iniciarPartida(idPartida);
+            
+            if (iniciada) {
+                // Si todo va bien, recargamos el tablero y ya saldrá el juego
+                response.sendRedirect("tablero.jsp");
+            } else {
+                // Si falla (ej. solo hay 1 jugador), avisamos
+                String error = URLEncoder.encode("⚠️ Necesitas entre 2 y 4 jugadores para empezar.", StandardCharsets.UTF_8);
+                response.sendRedirect("tablero.jsp?msg=" + error);
+            }
+            return; // Cortamos aquí
+        }
     }
 }

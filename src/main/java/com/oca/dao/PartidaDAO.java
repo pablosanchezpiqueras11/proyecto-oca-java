@@ -398,5 +398,74 @@ public class PartidaDAO {
             e.printStackTrace();
         }
         return 0; // Si falla o no encuentra, devuelve 0
-    }   
+    }
+    // 11. ELIMINAR PARTIDA (Y sus jugadores)
+    public boolean eliminarPartida(int idPartida) {
+        String sqlJugadores = "DELETE FROM partidas_jugadores WHERE id_partida = ?";
+        String sqlPartida = "DELETE FROM partidas WHERE id = ?";
+        
+        Connection conn = null;
+        try {
+            conn = Conexion.getConexion();
+            conn.setAutoCommit(false); // Transacción para que sea todo o nada
+            
+            // 1. Borrar jugadores asociados
+            try (PreparedStatement ps1 = conn.prepareStatement(sqlJugadores)) {
+                ps1.setInt(1, idPartida);
+                ps1.executeUpdate();
+            }
+            
+            // 2. Borrar la partida
+            try (PreparedStatement ps2 = conn.prepareStatement(sqlPartida)) {
+                ps2.setInt(1, idPartida);
+                int filas = ps2.executeUpdate();
+                
+                if (filas > 0) {
+                    conn.commit(); // Confirmar cambios
+                    return true;
+                }
+            }
+            
+            // Si algo falla antes del commit, no llegamos aquí
+            conn.rollback();
+            return false;
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try { if (conn != null) conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            return false;
+        } finally {
+            try { if (conn != null) conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+    }
+    // 12. INICIAR PARTIDA (Cambiar estado a JUGANDO)
+    public boolean iniciarPartida(int idPartida) {
+        // 1. Verificar cuántos jugadores hay
+        String sqlCount = "SELECT COUNT(*) FROM partidas_jugadores WHERE id_partida = ?";
+        String sqlUpdate = "UPDATE partidas SET estado = 'JUGANDO' WHERE id = ?";
+        
+        try (Connection conn = Conexion.getConexion()) {
+            
+            // A. Contamos jugadores
+            int total = 0;
+            try (PreparedStatement ps = conn.prepareStatement(sqlCount)) {
+                ps.setInt(1, idPartida);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) total = rs.getInt(1);
+            }
+            
+            // B. Si hay entre 2 y 4, iniciamos
+            if (total >= 2 && total <= 4) {
+                try (PreparedStatement ps = conn.prepareStatement(sqlUpdate)) {
+                    ps.setInt(1, idPartida);
+                    int filas = ps.executeUpdate();
+                    return filas > 0;
+                }
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false; // Devuelve false si hay < 2 jugadores o falla algo
+    }  
 }
