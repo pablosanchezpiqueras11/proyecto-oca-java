@@ -44,6 +44,7 @@
             <span>Hola, <b><%= jugador.getNombre() %></b></span>
             <a href="perfil.jsp">👤 Mi Perfil</a>
             <a href="index.html">🚪 Salir</a>
+            <a href="ranking.jsp" class="btn btn-warning btn-sm fw-bold text-dark" style="margin-right: 10px; text-decoration: none;">🏆 Ranking</a>
         </div>
     </div>
 
