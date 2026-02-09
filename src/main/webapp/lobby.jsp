@@ -71,7 +71,7 @@
                 </tr>
             </thead>
             <tbody>
-                <% for (Partida p : misPartidas) { %>
+              <% for (Partida p : misPartidas) { %>
                 <tr>
                     <td><%= p.getNombre() %></td>
                     <td>
@@ -80,23 +80,20 @@
                         </span>
                     </td>
                     <td><%= p.getJugadoresActuales() %>/4</td>
-                    
                     <td>
                         <a href="unirse?idPartida=<%= p.getId() %>" class="btn btn-jugar">ENTRAR 🎲</a>
                     </td>
-                    
                     <td>
                         <form action="lobby" method="post" style="margin: 0;">
                             <input type="hidden" name="accion" value="eliminar">
                             <input type="hidden" name="idPartida" value="<%= p.getId() %>">
-                            
                             <button type="submit" 
                                     style="background-color: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
                                     onclick="return confirm('¿Seguro que quieres borrar la partida \'<%= p.getNombre() %>\'? Se eliminará para todos.');">
                                 🗑️ Borrar
                             </button>
                         </form>
-                    </td>
+                   </td>
                 </tr>
                 <% } %>
             </tbody>
@@ -139,6 +136,21 @@
     <% } %>
 
 </div>
+
+<script>
+    // Configuración: El lobby se actualizará cada 5 segundos
+    const INTERVALO_REFRESCO = 5000; 
+
+    setInterval(function() {
+        // Localizamos el cuadro de texto donde escribes el nombre de la partida
+        const inputNombre = document.querySelector('input[name="nombrePartida"]');
+        
+        // Solo recarga la página si el usuario NO está escribiendo nada
+        if (inputNombre && inputNombre.value.trim() === "") {
+            window.location.reload();
+        }
+    }, INTERVALO_REFRESCO);
+</script>
 
 </body>
 </html>
