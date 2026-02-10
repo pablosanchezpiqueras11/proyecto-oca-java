@@ -104,9 +104,9 @@ public class ReglasOca {
      */
     public static int getTurnosCastigo(int casilla) {
         switch (casilla) {
-            case POSADA: return 1;  // Pierde 1 turno
-            case POZO:   return -1;  // Pierde 2 turnos (simulado)
-            case CARCEL: return 3;  // Pierde 3 turnos
+            case POSADA: return 2;  // Pierde 1 turno
+            case POZO:   return -1;  
+            case CARCEL: return 4;  // Pierde 3 turnos
             default:     return 0;
         }
     }

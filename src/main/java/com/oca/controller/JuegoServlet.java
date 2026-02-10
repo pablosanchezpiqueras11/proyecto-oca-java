@@ -118,6 +118,7 @@ public class JuegoServlet extends HttpServlet {
                     partidaDAO.actualizarPosicion(idPartida, jugador.getId(), casillaFinal);
                     
                     // Comprobar Victoria
+                    boolean huboSalto = (casillaTentativa != casillaFinal);
                     if (casillaFinal >= 63) {
                          mensaje = "¡HAS GANADO! 🏆";
                          partidaDAO.terminarPartida(idPartida, jugador.getId());
@@ -125,17 +126,43 @@ public class JuegoServlet extends HttpServlet {
                          jugador.setPartidasGanadas(jugador.getPartidasGanadas() + 1);
                     } else {
                          // Mensajes y Turnos
-                         int castigo = ReglasOca.getTurnosCastigo(casillaFinal);
-                         if (castigo == -1) mensaje = "¡Al POZO! 😱";
-                         else if (castigo > 0) mensaje = "¡Castigo! Pierdes turnos.";
-                         else mensaje = "Sacas un " + valorDado + " y vas a la " + casillaFinal;
+                         // A) MENSAJES DE EVENTOS (Saltos con Rima)
+                        if (huboSalto) {
+                             if (casillaTentativa == 6 || casillaTentativa == 12) {
+                                 mensaje = "🌊 ¡De puente a puente y tiro porque me lleva la corriente! (" + casillaTentativa + "->" + casillaFinal + ")";
+                             } else if (casillaTentativa == 26 || casillaTentativa == 53) {
+                                 mensaje = "🎲 ¡De dado a dado y tiro porque me ha tocado! (" + casillaTentativa + "->" + casillaFinal + ")";
+                             } else if (casillaTentativa == 42) { // Laberinto
+                                 mensaje = "🕸️ ¡Del Laberinto al 30! Retrocedes.";
+                             } else if (casillaTentativa == 58) { // Muerte
+                                 mensaje = "💀 ¡LA MUERTE! Vuelves a la Casilla 1.";
+                             } else {
+                                 // Si no es nada de lo anterior, es una OCA (5, 9, 14, 18...)
+                                 mensaje = "🦆 ¡De Oca a Oca y tiro porque me toca! (" + casillaTentativa + "->" + casillaFinal + ")";
+                             }
+                        } 
+                        // B) MENSAJES DE CASTIGO (Sin salto, pero pierdes turno)
+                        else if (casillaFinal == 19) {
+                            mensaje = "🛌 ¡POSADA! Pierdes 1 turno durmiendo.";
+                        } else if (casillaFinal == 31) { // Pozo
+                            mensaje = "🕳️ ¡Al POZO! No sales hasta que otro caiga.";
+                        } else if (casillaFinal == 52) { // Cárcel
+                            mensaje = "⛓️ ¡A la CÁRCEL! Pierdes 3 turnos.";
+                        } 
+                        // C) MOVIMIENTO NORMAL
+                        else {
+                            mensaje = "🎲 Sacas un " + valorDado + " y vas a la casilla " + casillaFinal;
+                        }
 
-                         if (reglas.turnoExtra(casillaFinal)) {
-                             mensaje += " ¡Tiras otra vez! 🎲";
-                         } else {
+                        // 3. GESTIÓN DE TURNOS EXTRA
+                        if (reglas.turnoExtra(casillaFinal)) {
+                            // Si es Oca, Puente o Dado, NO pasamos turno
+                             mensaje += " ¡Vuelves a tirar!";
+                        } else {
+                             // Si no, pasa el turno al siguiente
                              partidaDAO.pasarTurno(idPartida);
                              mensaje += " Turno del siguiente.";
-                         }
+                        }
                     }
                 }
                 // Preparamos la URL de salida
