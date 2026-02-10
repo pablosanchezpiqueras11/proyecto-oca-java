@@ -3,11 +3,13 @@ package com.oca.controller;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import com.oca.dao.JugadorDAO;
 import com.oca.dao.PartidaDAO;
 import com.oca.logica.ReglasOca;
 import com.oca.modelo.Jugador;
+import com.oca.modelo.PartidaJugador;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -81,27 +83,45 @@ public class JuegoServlet extends HttpServlet {
             // ===================================================================
             else if ("tirar".equals(accion)) {
                 
-                // Comprobaciones iniciales (Turno, Estado, Castigos)
+                // A) OBTENER ESTADO DE CASTIGO PREVIO (Para saber si se acaba de liberar)
+                // Esto es necesario para el mensaje "Te quedan 0 turnos"
+                List<PartidaJugador> posiciones = partidaDAO.obtenerPosiciones(idPartida);
+                int castigoPrevio = 0;
+                for (PartidaJugador pj : posiciones) {
+                    if (pj.getIdJugador() == jugador.getId()) {
+                        castigoPrevio = pj.getTurnosCastigo();
+                        break;
+                    }
+                }
+
+                // B) GESTIONAR CASTIGOS (Resta turno si corresponde)
                 String estadoActual = partidaDAO.getEstadoPartida(idPartida);
                 int idTurnoActual = partidaDAO.getTurnoActual(idPartida);
                 int turnosCastigo = partidaDAO.gestionarTurnosCastigo(idPartida, jugador.getId());
 
                 if ("TERMINADA".equals(estadoActual)) {
-                    // Si terminó, no hacemos nada, urlDestino ya es tablero.jsp
+                    // Si terminó, no hacemos nada
                 } 
                 else if (idTurnoActual != jugador.getId()) {
                     mensaje = "✋ No es tu turno.";
                 }
                 else if (turnosCastigo == -1) {
-                    mensaje = "¡Sigues en el Pozo! 🕳️";
+                    mensaje = "¡Sigues en el Pozo! 🕳️<br>Debes esperar a que otro caiga.";
                     partidaDAO.pasarTurno(idPartida);
                 }
                 else if (turnosCastigo > 0) {
-                    mensaje = "¡Castigado! Faltan " + turnosCastigo + " turnos.";
+                    mensaje = "¡Estás Castigado!<br>Te quedan " + turnosCastigo + " turnos.";
                     partidaDAO.pasarTurno(idPartida);
                 } 
                 else {
-                    // --- JUGAR ---
+                    // --- JUGAR (turnosCastigo es 0) ---
+                    
+                    // Comprobamos si nos acabamos de liberar (teníamos castigo y ahora es 0)
+                    String avisoLiberado = "";
+                    if (castigoPrevio > 0) {
+                        avisoLiberado = "🔓 ¡Te quedan 0 turnos! ¡Es tu turno!<br>";
+                    }
+
                     String dadoTrucado = request.getParameter("dadoTrucado");
                     if (esAdmin && dadoTrucado != null && !dadoTrucado.isEmpty()) {
                         try {
@@ -120,28 +140,27 @@ public class JuegoServlet extends HttpServlet {
                     // Comprobar Victoria
                     boolean huboSalto = (casillaTentativa != casillaFinal);
                     if (casillaFinal >= 63) {
-                         mensaje = "¡HAS GANADO! 🏆";
+                         // Si gana, le añadimos el aviso si se acaba de liberar
+                         mensaje = avisoLiberado + "¡HAS GANADO! 🏆";
                          partidaDAO.terminarPartida(idPartida, jugador.getId());
                          new JugadorDAO().sumarVictoria(jugador.getId());
                          jugador.setPartidasGanadas(jugador.getPartidasGanadas() + 1);
                     } else {
                          // Mensajes y Turnos
-                         // A) MENSAJES DE EVENTOS (Saltos con Rima)
                         if (huboSalto) {
                              if (casillaTentativa == 6 || casillaTentativa == 12) {
-                                 mensaje = "🌊 ¡De puente a puente y tiro porque me lleva la corriente! (" + casillaTentativa + "->" + casillaFinal + ")";
+                                 mensaje = "🌊 ¡De puente a puente y tiro porque me lleva la corriente!<br>(" + casillaTentativa + "->" + casillaFinal + ")";
                              } else if (casillaTentativa == 26 || casillaTentativa == 53) {
-                                 mensaje = "🎲 ¡De dado a dado y tiro porque me ha tocado! (" + casillaTentativa + "->" + casillaFinal + ")";
+                                 mensaje = "🎲 ¡De dado a dado y tiro porque me ha tocado!<br>(" + casillaTentativa + "->" + casillaFinal + ")";
                              } else if (casillaTentativa == 42) { // Laberinto
                                  mensaje = "🕸️ ¡Del Laberinto al 30! Retrocedes.";
                              } else if (casillaTentativa == 58) { // Muerte
                                  mensaje = "💀 ¡LA MUERTE! Vuelves a la Casilla 1.";
                              } else {
-                                 // Si no es nada de lo anterior, es una OCA (5, 9, 14, 18...)
-                                 mensaje = "🦆 ¡De Oca a Oca y tiro porque me toca! (" + casillaTentativa + "->" + casillaFinal + ")";
+                                 // Oca
+                                 mensaje = "🦆 ¡De Oca a Oca y tiro porque me toca!<br>(" + casillaTentativa + "->" + casillaFinal + ")";
                              }
                         } 
-                        // B) MENSAJES DE CASTIGO (Sin salto, pero pierdes turno)
                         else if (casillaFinal == 19) {
                             mensaje = "🛌 ¡POSADA! Pierdes 1 turno durmiendo.";
                         } else if (casillaFinal == 31) { // Pozo
@@ -149,23 +168,23 @@ public class JuegoServlet extends HttpServlet {
                         } else if (casillaFinal == 52) { // Cárcel
                             mensaje = "⛓️ ¡A la CÁRCEL! Pierdes 3 turnos.";
                         } 
-                        // C) MOVIMIENTO NORMAL
                         else {
                             mensaje = "🎲 Sacas un " + valorDado + " y vas a la casilla " + casillaFinal;
                         }
 
+                        // Añadimos el aviso de "Te quedan 0 turnos" al principio si corresponde
+                        mensaje = avisoLiberado + mensaje;
+
                         // 3. GESTIÓN DE TURNOS EXTRA
                         if (reglas.turnoExtra(casillaFinal)) {
-                            // Si es Oca, Puente o Dado, NO pasamos turno
-                             mensaje += " ¡Vuelves a tirar!";
+                             mensaje += "<br>¡Vuelves a tirar!";
                         } else {
-                             // Si no, pasa el turno al siguiente
                              partidaDAO.pasarTurno(idPartida);
-                             mensaje += " Turno del siguiente.";
+                             mensaje += "<br>Turno del siguiente.";
                         }
                     }
                 }
-                // Preparamos la URL de salida
+                // Preparamos la URL de salida codificando el mensaje para caracteres especiales y saltos
                 String msgEnc = URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
                 urlDestino = "tablero.jsp?msg=" + msgEnc + "&dado=" + valorDado;
             }
@@ -181,7 +200,6 @@ public class JuegoServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            // Si hay CUALQUIER error técnico (base de datos, nulls, etc.), capturamos y avisamos
             e.printStackTrace();
             urlDestino = "tablero.jsp?msg=" + URLEncoder.encode("⚠️ Error técnico en el servidor.", StandardCharsets.UTF_8);
         }

@@ -32,7 +32,7 @@
     }
     int totalJugadores = jugadoresEnPartida.size();
     
-    // RECUPERAR EL NÚMERO DEL DADO DE LA URL PARA LA ANIMACIÓN
+    // RECUPERAR DATOS DE LA URL
     String msg = request.getParameter("msg");
     String dadoParam = request.getParameter("dado");
     int numeroDado = 1; // Valor por defecto
@@ -49,34 +49,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>La Oca Online</title>
 
-  <%-- LÓGICA DE REFRESCO INTELIGENTE (ESTO NO SE TOCA) --%>
+  <%-- LÓGICA DE REFRESCO INTELIGENTE --%>
   <% if ("ESPERANDO".equals(estadoPartida)) { %>
-      <meta http-equiv="refresh" content="3">
+      <meta http-equiv="refresh" content="3;url=tablero.jsp">
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
       
   <% } else if ("TERMINADA".equals(estadoPartida)) { %>
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
       
   <% } else { 
-      // Si es mi turno, NO refresco para poder usar el panel admin tranquilo
+      // Si NO es mi turno, refresco la página limpiando la URL (quitando mensajes viejos)
       if (idTurnoActual != jugador.getId()) { 
   %>
-      <meta http-equiv="refresh" content="3">
+      <meta http-equiv="refresh" content="3;url=tablero.jsp">
   <%  } 
      } 
   %>
 
   <% if (!"ESPERANDO".equals(estadoPartida) && !"TERMINADA".equals(estadoPartida)) { %>
   <style>
-        :root { --sidebar-w: 250px; /* Un poco más ancho para que quepa bien el panel admin */
-        --header-h: 60px; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #2c3e50;
-        color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        :root { --sidebar-w: 250px;
+        --header-h: 80px; /* Aumentado para mensajes multilínea */
         }
-        header { height: var(--header-h); background: #1a252f; display: flex; align-items: center; justify-content: space-between;
-        padding: 0 20px; border-bottom: 2px solid #f1c40f; box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #2c3e50;
+        color: white;
+        display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+        header { height: var(--header-h);
+        background: #1a252f; display: flex; align-items: center; justify-content: space-between;
+        padding: 0 20px; border-bottom: 2px solid #f1c40f; box-sizing: border-box;
+        }
+        .header-msg {
+            color: #f1c40f; font-weight: bold; text-align: center; line-height: 1.2;
+        }
         .main-container { display: flex;
-        flex: 1; height: calc(100vh - var(--header-h)); overflow: hidden; }
+        flex: 1; height: calc(100vh - var(--header-h)); overflow: hidden;
+        }
         
         /* PANEL LATERAL */
         .sidebar { width: var(--sidebar-w);
@@ -129,29 +137,23 @@
         border: 2px solid #ddd; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: #333;
         }
         
-        .face-1 { transform: translateZ(30px);
-        }
-        .face-2 { transform: rotateY(180deg) translateZ(30px);
-        }
-        .face-3 { transform: rotateY(90deg) translateZ(30px);
-        }
-        .face-4 { transform: rotateY(-90deg) translateZ(30px);
-        }
-        .face-5 { transform: rotateX(90deg) translateZ(30px);
-        }
-        .face-6 { transform: rotateX(-90deg) translateZ(30px);
-        }
+        .face-1 { transform: translateZ(30px); }
+        .face-2 { transform: rotateY(180deg) translateZ(30px); }
+        .face-3 { transform: rotateY(90deg) translateZ(30px); }
+        .face-4 { transform: rotateY(-90deg) translateZ(30px); }
+        .face-5 { transform: rotateX(90deg) translateZ(30px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(30px); }
 
-        .rolling { animation: rolling-anim 0.5s infinite linear;
+        .rolling { animation: rolling-anim 0.5s infinite linear; }
+        @keyframes rolling-anim { 
+            0% { transform: rotateX(0deg) rotateY(0deg); } 
+            100% { transform: rotateX(360deg) rotateY(360deg); } 
         }
-        @keyframes rolling-anim { 0% { transform: rotateX(0deg) rotateY(0deg);
-        } 100% { transform: rotateX(360deg) rotateY(360deg); } }
 
         .btn-tirar { width: 100%;
         padding: 15px; background: #e67e22; color: white; border: 2px solid white; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
         box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-        .btn-tirar:disabled { background: #7f8c8d; opacity: 0.7;
-        }
+        .btn-tirar:disabled { background: #7f8c8d; opacity: 0.7; }
         
         /* ESTILOS DEL MODO TESTER / ADMIN */
         .admin-panel {
@@ -162,10 +164,12 @@
             border: 1px solid #f1c40f;
         }
         .admin-title {
-            color: #f1c40f; font-weight: bold; font-size: 0.85rem; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;
+            color: #f1c40f;
+            font-weight: bold; font-size: 0.85rem; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;
         }
         .teleport-row {
-            display: flex; gap: 5px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px;
+            display: flex;
+            gap: 5px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px;
         }
   </style>
   <% } %>
@@ -184,28 +188,24 @@
                     <div class="card-body">
                         <h4 class="mb-4">Jugadores: <span class="badge bg-info"><%= totalJugadores %> / 4</span></h4>
                         <div class="list-group mb-4 text-start">
-                       
+                    
                         <% for (PartidaJugador pj : jugadoresEnPartida) { 
                                  String nombreReal = dao.getNombreJugador(pj.getIdJugador());
                         %>
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>👤 <strong><%= nombreReal %></strong>
-                         
                                     <% if (pj.getOrden() == 1) { %><span class="badge bg-warning text-dark ms-2">👑 Host</span><% } %>
                                     <% if (pj.getIdJugador() == jugador.getId()) { %><span class="badge bg-info text-dark ms-1">👈 Tú</span><% } %>
-                   
                                     </span>
                                     <span class="badge rounded-pill bg-success">Listo</span>
                                 </div>
-            
                         <% } %>
                         </div>
+              
                         <% if (soyAdmin && totalJugadores >= 2) { %>
-                          
                             <form action="JuegoServlet" method="post">
                                 <input type="hidden" name="accion" value="iniciar">
                                 <button type="submit" class="btn btn-lg btn-primary w-100">🚀 INICIAR</button>
-                       
                             </form>
                         <% } else if (soyAdmin) { %>
                             <div class="alert alert-warning">Esperando jugadores (mín. 2)...</div>
@@ -222,8 +222,8 @@
 
 <%-- ESCENARIO 2: PARTIDA TERMINADA --%>
 <% } else if ("TERMINADA".equals(estadoPartida)) { %>
+ 
     <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center" style="background-color: #2c3e50;">
-    
         <div class="card shadow-lg border-0 p-4" style="max-width: 600px; width: 100%; border-radius: 20px;">
             <div class="card-body text-center">
                 <h1 class="<%= soyGanador ? "text-success" : "text-secondary" %> display-4 fw-bold">
@@ -239,7 +239,30 @@
 <% } else { %>
     <header>
         <div>Partida #<%= idPartida %></div>
-        <div style="color: #f1c40f; font-weight: bold;"><%= (msg != null) ? java.net.URLDecoder.decode(msg, "UTF-8") : "¡Tu turno!" %></div>
+        <div class="header-msg">
+            <% 
+                String textoCabecera = "";
+                
+                // PRIORIDAD 1: Si hay un mensaje de evento (tiro, oca, etc.) en la URL, lo mostramos
+                if (msg != null) {
+                    textoCabecera = java.net.URLDecoder.decode(msg, "UTF-8");
+                } 
+                // PRIORIDAD 2: Si no hay mensaje, mostramos el estado actual (Turno de X o Mío)
+                else {
+                    if (idTurnoActual == jugador.getId()) {
+                        textoCabecera = "¡Es tu turno! 🎲";
+                    } else {
+                        // Buscamos el nombre del jugador que tiene el turno
+                        String nombreDelTurno = "Rival"; 
+                        try {
+                            nombreDelTurno = dao.getNombreJugador(idTurnoActual);
+                        } catch(Exception e){}
+                        textoCabecera = "Turno de " + nombreDelTurno + " ⏳";
+                    }
+                }
+            %>
+            <%= textoCabecera %>
+        </div>
         <a href="lobby" style="color: #bdc3c7; text-decoration: none; font-size: 0.8rem;">← Salir</a>
     </header>
 
@@ -248,20 +271,17 @@
             <div>
                 <h3>Jugadores</h3>
                 <% for (PartidaJugador pj : jugadoresEnPartida) { 
-          
                     String nombreDisplay = dao.getNombreJugador(pj.getIdJugador());
                     boolean esTurno = (pj.getIdJugador() == idTurnoActual);
-                    String color = (pj.getOrden()==1)?"#27ae60":(pj.getOrden()==2)?"#2980b9":(pj.getOrden()==3)?"#e74c3c":"#d4fc10"; 
+                    String color = (pj.getOrden()==1)?"#27ae60":(pj.getOrden()==2)?"#2980b9":(pj.getOrden()==3)?"#e74c3c":"#d4fc10";
                 %>
                     <div class="player-card <%= esTurno ? "is-turn" : "" %>">
                         <div class="dot" style="background-color: <%= color %>;"></div>
                         <div>
-               
                             <div class="name"><%= nombreDisplay %></div>
                             <span class="casilla-info">Casilla: <%= pj.getCasilla() %></span>
                         </div>
-                    </div>
-        
+                   </div>
                 <% } %>
             </div>
 
@@ -272,7 +292,6 @@
                         <div class="dice-face face-2">2</div>
                         <div class="dice-face face-3">3</div>
                         <div class="dice-face face-4">4</div>
-                     
                         <div class="dice-face face-5">5</div>
                         <div class="dice-face face-6">6</div>
                     </div>
@@ -282,9 +301,10 @@
            
                     <form id="form-tirar" action="JuegoServlet" method="post">
                         <input type="hidden" id="accion-input" name="accion" value="tirar">
-                        
+         
                         <%-- MODO ADMIN / TESTER (INCLUYE DADO Y TELETRANSPORTE) --%>
-                        <% if (jugador.getNombre().equalsIgnoreCase("admin") || jugador.getNombre().equalsIgnoreCase("tester")) { %>
+                        <% if (jugador.getNombre().equalsIgnoreCase("admin") ||
+                            jugador.getNombre().equalsIgnoreCase("tester")) { %>
                             <div class="admin-panel">
                                 <label class="admin-title">🔧 MODO TESTER</label>
                                 
@@ -298,11 +318,14 @@
                                     <option value="5">Forzar 5</option>
                                     <option value="6">Forzar 6</option>
                                 </select>
-                                
+                          
                                 <%-- 2. TELETRANSPORTE (NUEVO) --%>
                                 <div class="teleport-row">
-                                    <input type="number" name="casillaTeleport" placeholder="Casilla #" min="1" max="63" style="width: 70px; padding: 4px; border-radius: 4px; border:none;">
-                                    <button type="button" onclick="hacerTeleport()" style="flex:1; background: #8e44ad; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 0.8rem; cursor: pointer;">IR 🚀</button>
+                                    <input type="number" name="casillaTeleport" placeholder="Casilla #" min="1" max="63" style="width: 70px;
+                                    padding: 4px; border-radius: 4px; border:none;">
+                                    <button type="button" onclick="hacerTeleport()" style="flex:1;
+                                    background: #8e44ad; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 0.8rem;
+                                    cursor: pointer;">IR 🚀</button>
                                 </div>
                             </div>
                         <% } %>
@@ -318,7 +341,6 @@
 
         <div class="board-area">
             <div class="board-container">
-          
                 <img src="assets/tablero.jpg" class="board-img" alt="Tablero">
                 <svg class="overlay" viewBox="0 0 1000 1000">
                     <circle id="p1" class="token" fill="#27ae60" r="18" style="display:none"></circle>
@@ -334,7 +356,8 @@
         // COORDENADAS
         const posMap = {
             "1": {"cx":172,"cy":885}, "2": {"cx":374,"cy":885}, "3": {"cx":457,"cy":885}, "4": {"cx":535,"cy":885},
-            "5": {"cx":619,"cy":885}, "6": {"cx":699,"cy":885}, "7": {"cx":777,"cy":885}, "8": {"cx":851,"cy":885},
+            "5": {"cx":619,"cy":885}, "6": {"cx":699,"cy":885}, 
+            "7": {"cx":777,"cy":885}, "8": {"cx":851,"cy":885},
             "9": {"cx":895,"cy":835}, "10":{"cx":895,"cy":758}, "11":{"cx":895,"cy":685}, "12":{"cx":895,"cy":604},
             "13":{"cx":895,"cy":523}, "14":{"cx":895,"cy":443}, "15":{"cx":895,"cy":367}, "16":{"cx":895,"cy":290},
             "17":{"cx":895,"cy":217}, "18":{"cx":895,"cy":136}, "19":{"cx":836,"cy":96}, "20":{"cx":760,"cy":96},
@@ -350,7 +373,6 @@
             "57":{"cx":254,"cy":296}, "58":{"cx":254,"cy":372}, "59":{"cx":254,"cy":448}, "60":{"cx":254,"cy":520},
             "61":{"cx":294,"cy":578}, "62":{"cx":376,"cy":578}, "63":{"cx":495,"cy":448}
         };
-
         // 1. FUNCIÓN PARA MOVER EL DADO A LA CARA CORRECTA
         function fijarDado(num) {
             const dice = document.getElementById('visual-dice');
@@ -374,7 +396,6 @@
         function animarYEnviar() {
             // Aseguramos que la acción sea 'tirar'
             document.getElementById('accion-input').value = 'tirar';
-            
             const dice = document.getElementById('visual-dice');
             const btn = document.getElementById('btn-tirar');
             dice.classList.add('rolling'); // Activa la animación CSS infinita
