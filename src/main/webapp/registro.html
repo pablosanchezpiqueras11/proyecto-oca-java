@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <title>Registro - La Oca</title>
     <style>
-        /* Reutilizamos el estilo del Login para mantener la coherencia */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #2c3e50; /* Fondo oscuro */
+            background-color: #2c3e50;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,7 +18,7 @@
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 15px 25px rgba(0,0,0,0.2);
-            width: 320px; /* Un pelín más ancho que el login */
+            width: 320px;
             text-align: center;
         }
         h2 { color: #333; margin-bottom: 20px; }
@@ -34,7 +33,6 @@
             box-sizing: border-box;
         }
 
-        /* Botón VERDE para registro */
         .btn-registro {
             width: 100%;
             background-color: #27ae60; 
@@ -53,6 +51,51 @@
         .links { margin-top: 15px; font-size: 0.9em; }
         a { color: #2980b9; text-decoration: none; }
         a:hover { text-decoration: underline; }
+
+        /* --- ESTILOS DE LA NOTIFICACIÓN (TOAST) --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px; /* Mitad del ancho para centrar */
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px; /* Bordes redondeados */
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px; /* Aparece abajo */
+            font-size: 17px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Animación para aparecer y desaparecer */
+        #toast.mostrar {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @-webkit-keyframes fadein {
+            from {bottom: 0; opacity: 0;} 
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @-webkit-keyframes fadeout {
+            from {bottom: 30px; opacity: 1;} 
+            to {bottom: 0; opacity: 0;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
     </style>
 </head>
 <body>
@@ -62,7 +105,6 @@
         
         <form id="formRegistro" action="RegistroServlet" method="post">
             <input type="text" name="usuario" placeholder="Elige tu nombre de usuario" required>
-            
             <input type="password" id="pass1" name="pass1" placeholder="Contraseña" required>
             <input type="password" id="pass2" name="pass2" placeholder="Repite la contraseña" required>
             
@@ -74,28 +116,47 @@
         </div>
     </div>
 
+    <div id="toast">Mensaje aquí</div>
+
     <script>
-        // Buscamos el formulario y las cajas de texto por su ID
+        // Función para mostrar el Toast
+        function mostrarNotificacion(mensaje, esError) {
+            const x = document.getElementById("toast");
+            x.innerText = mensaje;
+            
+            // Cambiamos el color según si es error o éxito
+            if (esError) {
+                x.style.backgroundColor = "#c0392b"; // Rojo
+            } else {
+                x.style.backgroundColor = "#27ae60"; // Verde
+            }
+
+            // Añadimos la clase que tiene la animación
+            x.className = "mostrar";
+
+            // Quitamos la clase después de 3 segundos
+            setTimeout(function(){ x.className = x.className.replace("mostrar", ""); }, 3000);
+        }
+
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            
+            if (params.get("error") === "fallo") {
+                mostrarNotificacion("❌ El usuario ya existe o hubo un error.", true);
+            }
+        };
+
         const formulario = document.getElementById('formRegistro');
         const pass1 = document.getElementById('pass1');
         const pass2 = document.getElementById('pass2');
 
-        // Cuando alguien intente enviar (submit) el formulario...
         formulario.addEventListener('submit', function(event) {
-            
-            // Comprobamos si las contraseñas son distintas
             if (pass1.value !== pass2.value) {
-                // ¡ALTO! Detenemos el envío para que no vaya al servidor
                 event.preventDefault();
-                
-                // Mostramos un aviso
-                alert("❌ ¡Las contraseñas no coinciden! Inténtalo de nuevo.");
-                
-                // Borramos la segunda caja para que la vuelva a escribir
+                mostrarNotificacion("⚠️ Las contraseñas no coinciden.", true);
                 pass2.value = "";
-                pass2.focus(); // Ponemos el cursor ahí automáticamente
+                pass2.focus();
             }
-            // Si son iguales, el código deja pasar el envío normalmente.
         });
     </script>
 
