@@ -23,15 +23,26 @@
     boolean soyGanador = false;     
     int idGanador = -1;             
     
+    // Variable para saber MI estado actual (si estoy castigado, etc.)
+    PartidaJugador miEstado = null;
+
     for (PartidaJugador pj : jugadoresEnPartida) {
+        // Detectar si soy Admin (el creador, orden 1)
         if (pj.getIdJugador() == jugador.getId() && pj.getOrden() == 1) soyAdmin = true;
+        
+        // Guardar mi objeto de jugador para consultar mis castigos luego
+        if (pj.getIdJugador() == jugador.getId()) {
+            miEstado = pj;
+        }
+
+        // Detectar ganador
         if (pj.getCasilla() >= 63) {
             idGanador = pj.getIdJugador();
             if (idGanador == jugador.getId()) soyGanador = true;
         }
     }
     int totalJugadores = jugadoresEnPartida.size();
-    
+
     // RECUPERAR DATOS DE LA URL
     String msg = request.getParameter("msg");
     String dadoParam = request.getParameter("dado");
@@ -58,7 +69,7 @@
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
       
   <% } else { 
-      // Si NO es mi turno, refresco la página limpiando la URL (quitando mensajes viejos)
+      // Si NO es mi turno, refresco la página para ver cuándo me toca
       if (idTurnoActual != jugador.getId()) { 
   %>
       <meta http-equiv="refresh" content="3;url=tablero.jsp">
@@ -69,9 +80,10 @@
   <% if (!"ESPERANDO".equals(estadoPartida) && !"TERMINADA".equals(estadoPartida)) { %>
   <style>
         :root { --sidebar-w: 250px;
-        --header-h: 80px; /* Aumentado para mensajes multilínea */
+        --header-h: 90px; /* Un poco más alto para mensajes de 2 líneas */
         }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #2c3e50;
+        body { margin: 0;
+        font-family: 'Segoe UI', sans-serif; background: #2c3e50;
         color: white;
         display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
@@ -80,10 +92,15 @@
         padding: 0 20px; border-bottom: 2px solid #f1c40f; box-sizing: border-box;
         }
         .header-msg {
-            color: #f1c40f; font-weight: bold; text-align: center; line-height: 1.2;
+            color: #f1c40f;
+            font-weight: bold; text-align: center; line-height: 1.4; font-size: 1.1rem;
+        }
+        .header-submsg {
+            font-size: 0.9rem; color: #bdc3c7; font-weight: normal;
         }
         .main-container { display: flex;
-        flex: 1; height: calc(100vh - var(--header-h)); overflow: hidden;
+        flex: 1;
+        height: calc(100vh - var(--header-h)); overflow: hidden;
         }
         
         /* PANEL LATERAL */
@@ -137,23 +154,33 @@
         border: 2px solid #ddd; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: #333;
         }
         
-        .face-1 { transform: translateZ(30px); }
-        .face-2 { transform: rotateY(180deg) translateZ(30px); }
-        .face-3 { transform: rotateY(90deg) translateZ(30px); }
-        .face-4 { transform: rotateY(-90deg) translateZ(30px); }
-        .face-5 { transform: rotateX(90deg) translateZ(30px); }
-        .face-6 { transform: rotateX(-90deg) translateZ(30px); }
+        .face-1 { transform: translateZ(30px);
+        }
+        .face-2 { transform: rotateY(180deg) translateZ(30px);
+        }
+        .face-3 { transform: rotateY(90deg) translateZ(30px);
+        }
+        .face-4 { transform: rotateY(-90deg) translateZ(30px);
+        }
+        .face-5 { transform: rotateX(90deg) translateZ(30px);
+        }
+        .face-6 { transform: rotateX(-90deg) translateZ(30px);
+        }
 
-        .rolling { animation: rolling-anim 0.5s infinite linear; }
+        .rolling { animation: rolling-anim 0.5s infinite linear;
+        }
         @keyframes rolling-anim { 
-            0% { transform: rotateX(0deg) rotateY(0deg); } 
-            100% { transform: rotateX(360deg) rotateY(360deg); } 
+            0% { transform: rotateX(0deg) rotateY(0deg);
+            } 
+            100% { transform: rotateX(360deg) rotateY(360deg);
+            } 
         }
 
         .btn-tirar { width: 100%;
         padding: 15px; background: #e67e22; color: white; border: 2px solid white; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
         box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-        .btn-tirar:disabled { background: #7f8c8d; opacity: 0.7; }
+        .btn-tirar:disabled { background: #7f8c8d; opacity: 0.7;
+        }
         
         /* ESTILOS DEL MODO TESTER / ADMIN */
         .admin-panel {
@@ -194,19 +221,21 @@
                         %>
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>👤 <strong><%= nombreReal %></strong>
-                                    <% if (pj.getOrden() == 1) { %><span class="badge bg-warning text-dark ms-2">👑 Host</span><% } %>
+                                     <% if (pj.getOrden() == 1) { %><span class="badge bg-warning text-dark ms-2">👑 Host</span><% } %>
                                     <% if (pj.getIdJugador() == jugador.getId()) { %><span class="badge bg-info text-dark ms-1">👈 Tú</span><% } %>
-                                    </span>
+                                     </span>
                                     <span class="badge rounded-pill bg-success">Listo</span>
                                 </div>
+                    
                         <% } %>
                         </div>
               
                         <% if (soyAdmin && totalJugadores >= 2) { %>
+                        
                             <form action="JuegoServlet" method="post">
                                 <input type="hidden" name="accion" value="iniciar">
                                 <button type="submit" class="btn btn-lg btn-primary w-100">🚀 INICIAR</button>
-                            </form>
+                             </form>
                         <% } else if (soyAdmin) { %>
                             <div class="alert alert-warning">Esperando jugadores (mín. 2)...</div>
                         <% } else { %>
@@ -243,25 +272,38 @@
             <% 
                 String textoCabecera = "";
                 
-                // PRIORIDAD 1: Si hay un mensaje de evento (tiro, oca, etc.) en la URL, lo mostramos
+                // Obtenemos el nombre de a quién le toca
+                String nombreDelTurno = "Rival";
+                try {
+                    nombreDelTurno = dao.getNombreJugador(idTurnoActual);
+                } catch(Exception e){}
+
+                // PRIORIDAD 1: Mensaje de evento (acaba de tirar)
                 if (msg != null) {
-                    textoCabecera = java.net.URLDecoder.decode(msg, "UTF-8");
+                    out.print(java.net.URLDecoder.decode(msg, "UTF-8"));
                 } 
-                // PRIORIDAD 2: Si no hay mensaje, mostramos el estado actual (Turno de X o Mío)
+                // PRIORIDAD 2: Estado pasivo (mientras espera)
                 else {
-                    if (idTurnoActual == jugador.getId()) {
-                        textoCabecera = "¡Es tu turno! 🎲";
+                    // Verificamos si YO tengo castigo
+                    int misTurnosCastigo = (miEstado != null) ? miEstado.getTurnosCastigo() : 0;
+                    
+                    if (misTurnosCastigo == -1) {
+                         // Estoy en el pozo
+                         out.print("🕳️ ¡Estás atrapado en el Pozo!<br><span class='header-submsg'>Es el turno de " + nombreDelTurno + "</span>");
+                    } 
+                    else if (misTurnosCastigo > 0) {
+                         // Tengo penalización numérica
+                         out.print("🚫 Te quedan <b>" + misTurnosCastigo + "</b> turnos de espera.<br><span class='header-submsg'>Es el turno de " + nombreDelTurno + "</span>");
+                    }
+                    else if (idTurnoActual == jugador.getId()) {
+                         // Es mi turno y no estoy castigado
+                         out.print("¡Es tu turno! 🎲");
                     } else {
-                        // Buscamos el nombre del jugador que tiene el turno
-                        String nombreDelTurno = "Rival"; 
-                        try {
-                            nombreDelTurno = dao.getNombreJugador(idTurnoActual);
-                        } catch(Exception e){}
-                        textoCabecera = "Turno de " + nombreDelTurno + " ⏳";
+                         // No es mi turno y estoy libre
+                         out.print("Es el turno de " + nombreDelTurno + " ⏳");
                     }
                 }
             %>
-            <%= textoCabecera %>
         </div>
         <a href="lobby" style="color: #bdc3c7; text-decoration: none; font-size: 0.8rem;">← Salir</a>
     </header>
@@ -273,16 +315,20 @@
                 <% for (PartidaJugador pj : jugadoresEnPartida) { 
                     String nombreDisplay = dao.getNombreJugador(pj.getIdJugador());
                     boolean esTurno = (pj.getIdJugador() == idTurnoActual);
+                    // Colores por orden de llegada (1 al 4)
                     String color = (pj.getOrden()==1)?"#27ae60":(pj.getOrden()==2)?"#2980b9":(pj.getOrden()==3)?"#e74c3c":"#d4fc10";
                 %>
                     <div class="player-card <%= esTurno ? "is-turn" : "" %>">
                         <div class="dot" style="background-color: <%= color %>;"></div>
                         <div>
-                            <div class="name"><%= nombreDisplay %></div>
-                            <span class="casilla-info">Casilla: <%= pj.getCasilla() %></span>
+                             <div class="name"><%= nombreDisplay %></div>
+                            <span class="casilla-info">Casilla: <%= pj.getCasilla() %>
+                            <% if (pj.getTurnosCastigo() > 0) { %> (🚫 <%= pj.getTurnosCastigo() %>) <% } %>
+                            <% if (pj.getTurnosCastigo() == -1) { %> (🕳️ POZO) <% } %>
+                            </span>
                         </div>
                    </div>
-                <% } %>
+                 <% } %>
             </div>
 
             <div style="text-align: center;">
@@ -303,14 +349,13 @@
                         <input type="hidden" id="accion-input" name="accion" value="tirar">
          
                         <%-- MODO ADMIN / TESTER (INCLUYE DADO Y TELETRANSPORTE) --%>
-                        <% if (jugador.getNombre().equalsIgnoreCase("admin") ||
-                            jugador.getNombre().equalsIgnoreCase("tester")) { %>
+                        <% if (jugador.getNombre().equalsIgnoreCase("admin") || jugador.getNombre().equalsIgnoreCase("tester")) { %>
                             <div class="admin-panel">
                                 <label class="admin-title">🔧 MODO TESTER</label>
                                 
                                 <%-- 1. DADO TRUCADO --%>
                                 <select name="dadoTrucado" style="width: 100%; padding: 5px; border-radius: 4px; font-size: 0.9rem;">
-                                    <option value="">🎲 Dado Aleatorio</option>
+                                     <option value="">🎲 Dado Aleatorio</option>
                                     <option value="1">Forzar 1</option>
                                     <option value="2">Forzar 2</option>
                                     <option value="3">Forzar 3</option>
@@ -319,9 +364,9 @@
                                     <option value="6">Forzar 6</option>
                                 </select>
                           
-                                <%-- 2. TELETRANSPORTE (NUEVO) --%>
+                                <%-- 2. TELETRANSPORTE --%>
                                 <div class="teleport-row">
-                                    <input type="number" name="casillaTeleport" placeholder="Casilla #" min="1" max="63" style="width: 70px;
+                                     <input type="number" name="casillaTeleport" placeholder="Casilla #" min="1" max="63" style="width: 70px;
                                     padding: 4px; border-radius: 4px; border:none;">
                                     <button type="button" onclick="hacerTeleport()" style="flex:1;
                                     background: #8e44ad; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 0.8rem;
@@ -330,7 +375,9 @@
                             </div>
                         <% } %>
 
-                        <button type="button" id="btn-tirar" onclick="animarYEnviar()" class="btn-tirar">🎲 TIRAR</button>
+                         <button type="button" id="btn-tirar" onclick="animarYEnviar()" class="btn-tirar">
+                            <%= (miEstado != null && (miEstado.getTurnosCastigo() > 0 || miEstado.getTurnosCastigo() == -1)) ? "PASAR TURNO (CASTIGO)" : "🎲 TIRAR" %>
+                         </button>
                     </form>
             
                 <% } else { %>
@@ -343,7 +390,7 @@
             <div class="board-container">
                 <img src="assets/tablero.jpg" class="board-img" alt="Tablero">
                 <svg class="overlay" viewBox="0 0 1000 1000">
-                    <circle id="p1" class="token" fill="#27ae60" r="18" style="display:none"></circle>
+                     <circle id="p1" class="token" fill="#27ae60" r="18" style="display:none"></circle>
                     <circle id="p2" class="token" fill="#2980b9" r="18" style="display:none"></circle>
                     <circle id="p3" class="token" fill="#e74c3c" r="18" style="display:none"></circle>
                     <circle id="p4" class="token" fill="#d4fc10" r="18" style="display:none"></circle>
