@@ -464,7 +464,7 @@ public class PartidaDAO {
         return false;
     }
 
-    // 13. OBTENER ESTADO DE LA PARTIDA (¡Arreglado!)
+    // 13. OBTENER ESTADO DE LA PARTIDA
     public String getEstadoPartida(int idPartida) {
         String sql = "SELECT estado FROM partidas WHERE id = ?";
         try (Connection conn = Conexion.getConexion();
@@ -482,7 +482,7 @@ public class PartidaDAO {
         return "";
     }
 
-    // 14. OBTENER NOMBRE DEL JUGADOR (¡Corregido para mostrar nombres reales!)
+    // 14. OBTENER NOMBRE DEL JUGADOR
     public String getNombreJugador(int idJugador) {
         String sql = "SELECT nombre FROM jugadores WHERE id = ?"; 
         try (Connection conn = Conexion.getConexion();

@@ -451,7 +451,7 @@
             setTimeout(() => { document.getElementById('form-tirar').submit(); }, 1000);
         }
 
-        // 3. NUEVA FUNCIÓN: TELETRANSPORTE
+        // 3.FUNCIÓN: TELETRANSPORTE
         function hacerTeleport() {
             // Cambiamos la acción oculta a 'teleportar'
             document.getElementById('accion-input').value = 'teleportar';

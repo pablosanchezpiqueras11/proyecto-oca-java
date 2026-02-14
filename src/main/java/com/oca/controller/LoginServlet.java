@@ -31,10 +31,10 @@ public class LoginServlet extends HttpServlet {
             // 3. ¡Login correcto!
             HttpSession session = request.getSession();
             
-            // OJO AQUÍ: Cambiamos "jugadorLogueado" por "jugador" para que coincida con el Lobby
+            // Cambiamos "jugadorLogueado" por "jugador" para que coincida con el Lobby
             session.setAttribute("jugador", jugador); 
             
-            // Y AQUÍ: En vez de index.html, lo mandamos al servlet "lobby"
+            // En vez de index.html, lo mandamos al servlet "lobby"
             response.sendRedirect("lobby"); 
         } else {
             // 4. Login incorrecto

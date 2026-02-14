@@ -1,7 +1,7 @@
 package com.oca.modelo;
 
 public class Jugador {
-    // Estos atributos coinciden con tu tabla SQL
+
     private int id;
     private String nombre;
     private String password;

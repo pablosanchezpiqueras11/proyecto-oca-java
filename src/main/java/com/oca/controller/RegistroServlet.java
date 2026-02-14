@@ -20,14 +20,14 @@ public class RegistroServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // 1. Recogemos los datos que el usuario escribió en el formulario HTML
-        // Los nombres "usuario" y "pass1" deben coincidir con el 'name' de tus inputs en registro.html
+        
         String nombre = request.getParameter("usuario");
         String pass = request.getParameter("pass1");
         
         // 2. Creamos un objeto Jugador con esos datos
         Jugador nuevoJugador = new Jugador(nombre, pass);
         
-        // 3. Llamamos al DAO (nuestro experto en base de datos) para guardarlo
+        // 3. Llamamos al DAO 
         JugadorDAO dao = new JugadorDAO();
         boolean exito = dao.registrarJugador(nuevoJugador);
         

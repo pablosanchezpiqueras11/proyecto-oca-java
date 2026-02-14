@@ -86,9 +86,9 @@
     <div class="board-wrap">
       <img class="board-img" src="assets/tablero.jpg" alt="Tablero Oca" />
 
-      <!-- viewBox: tus coordenadas están en 0..1000 -->
+      
       <svg class="overlay" id="overlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-        <!-- ✅ SOLO dejamos fichas; las casillas se crean por JS -->
+        
         <circle class="token" id="p1" cx="172" cy="891" r="18"></circle>
         <circle class="token" id="p2" cx="190" cy="891" r="18"></circle>
       </svg>
@@ -96,7 +96,7 @@
   </div>
 
   <script>
-    // ✅ MAPA COMPLETO 1..63
+    // MAPA COMPLETO 1..63
     const posMap = {
       "1": {"cx":172,"cy":885},
       "2": {"cx":374,"cy":885},
@@ -166,7 +166,7 @@
     const overlay = document.getElementById("overlay");
     const CELL_R = 26; // radio de cada casilla clickable
 
-    // ✅ Crear 63 casillas en el SVG (según posMap)
+    // Crear 63 casillas en el SVG (según posMap)
     function renderCells(){
       // Si recargas, evita duplicados: elimina casillas anteriores
       overlay.querySelectorAll(".cell").forEach(c => c.remove());
@@ -185,7 +185,7 @@
       }
     }
 
-    // ✅ Mover ficha a una casilla
+    // Mover ficha a una casilla
     function moveToken(tokenId, pos, dx=0, dy=0){
       const p = posMap[String(pos)];
       if(!p) return;
@@ -199,7 +199,7 @@
     moveToken("p1", 1, -10, 0);
     moveToken("p2", 1, +10, 0);
 
-    // ✅ Debug útil: click en una casilla => mover fichas ahí
+    // Debug útil: click en una casilla => mover fichas ahí
     overlay.addEventListener("click", (e) => {
       const pos = e.target?.dataset?.pos;
       if (!pos) return;

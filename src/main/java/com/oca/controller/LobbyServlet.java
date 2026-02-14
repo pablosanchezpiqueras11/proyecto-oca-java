@@ -36,16 +36,14 @@ public class LobbyServlet extends HttpServlet {
             response.sendRedirect("index.html");
             return;
         }
-
-        // --- CAMBIO PRINCIPAL AQUÍ ---
         
         // 2. Cargar "Mis Partidas" (Partidas donde el usuario YA está jugando)
-        // Esto usa el método nuevo que añadimos al DAO
+
         List<Partida> misPartidas = partidaDAO.obtenerMisPartidas(jugador.getId());
         request.setAttribute("misPartidas", misPartidas);
 
         // 3. Cargar "Partidas Disponibles" (Partidas vacías donde el usuario NO está)
-        // Esto usa el otro método nuevo del DAO
+
         List<Partida> partidasDisponibles = partidaDAO.obtenerPartidasDisponibles(jugador.getId());
         request.setAttribute("partidasDisponibles", partidasDisponibles);
 
@@ -75,7 +73,7 @@ public class LobbyServlet extends HttpServlet {
             if (idStr != null) {
                 int idPartida = Integer.parseInt(idStr);
                 
-                // Llamamos al método de borrar (asegúrate de haber hecho el Paso 3 en el DAO)
+                // Llamamos al método de borrar
                 boolean borrada = partidaDAO.eliminarPartida(idPartida);
                 
                 if (borrada) {
@@ -84,11 +82,11 @@ public class LobbyServlet extends HttpServlet {
                     response.sendRedirect("lobby?error=No+se+pudo+borrar");
                 }
             }
-            return; // ¡IMPORTANTE! Cortamos aquí para que no siga
+            return;
         }
 
-        // CASO B: CREAR PARTIDA (Lo que tenías antes) 🆕
-        // Si no es eliminar, asumimos que es crear (o puedes poner un 'else if')
+        // CASO B: CREAR PARTIDA
+        // Si no es eliminar, asumimos que es crear
         
         String nombrePartida = request.getParameter("nombrePartida");
         

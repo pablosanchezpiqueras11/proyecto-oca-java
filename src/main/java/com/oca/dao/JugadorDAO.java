@@ -72,7 +72,7 @@ public class JugadorDAO {
             e.printStackTrace();
         }
     }
-    // MÉTODO 3: CAMBIAR CONTRASEÑA
+    // MÉTODO 4: CAMBIAR CONTRASEÑA
     public boolean cambiarPassword(int idJugador, String passActual, String passNueva) {
         boolean cambiado = false;
         String sql = "UPDATE jugadores SET password = ? WHERE id = ? AND password = ?";

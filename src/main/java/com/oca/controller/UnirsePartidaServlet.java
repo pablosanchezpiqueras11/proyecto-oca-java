@@ -40,7 +40,7 @@ public class UnirsePartidaServlet extends HttpServlet {
             boolean unido = dao.unirseAPartida(idPartida, jugador.getId());
             
             if (unido) {
-            // ✅ GUARDAMOS LA ID EN LA SESIÓN
+            // GUARDAMOS LA ID EN LA SESIÓN
                 // Esto es vital para que JuegoServlet sepa en qué partida estás jugando luego
                 session.setAttribute("idPartida", idPartida);
                 

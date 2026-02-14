@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class Conexion {
 
     // DATOS DE CONEXIÓN
-    // Si existen variables de entorno (en AWS), las usa. Si no (en tu PC), usa los valores por defecto "localhost".
+    // Si existen variables de entorno (en AWS), las usa. Si no, usa los valores por defecto "localhost".
     private static final String DB_HOST = System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "localhost";
     private static final String DB_PORT = System.getenv("DB_PORT") != null ? System.getenv("DB_PORT") : "3306";
     private static final String DB_NAME = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : "proyecto_oca";
@@ -24,8 +24,8 @@ public class Conexion {
             
             // 2. Establecemos la conexión
             cn = DriverManager.getConnection(URL, DB_USER, DB_PASS);
+
             
-            // Solo para depuración (quitar en producción si se desea)
             System.out.println("✅ Intentando conectar a: " + URL);
 
         } catch (ClassNotFoundException e) {
