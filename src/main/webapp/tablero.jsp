@@ -373,8 +373,27 @@
                         <% } %>
 
                         <button type="button" id="btn-tirar" onclick="animarYEnviar()" class="btn-tirar">
-                            <%= (miEstado != null && (miEstado.getTurnosCastigo() > 0 || miEstado.getTurnosCastigo() == -1)) ? "PASAR TURNO (CASTIGO)" : "🎲 TIRAR" %>
-                         </button>
+                            <% 
+                               // Lógica visual del botón:
+                               // 1. Si está en el POZO (-1), pone mensaje de Pozo.
+                               // 2. Si tiene MÁS de 1 turno real (>1), pone "Pasar Turno".
+                               // 3. Si tiene 0 o 1 turno real (es decir, ya sale), pone "TIRAR".
+                               
+                               if (miEstado != null && miEstado.getTurnosCastigo() == -1) { 
+                            %>
+                                   🕳️ PASAR TURNO (POZO)
+                            <% 
+                               } else if (miEstado != null && miEstado.getTurnosCastigo() > 1) { 
+                                   // Mostramos (Reales - 1) para que sea visualmente correcto
+                            %>
+                                   🚫 PASAR TURNO (Te quedan <%= miEstado.getTurnosCastigo() - 1 %>)
+                            <% 
+                               } else { 
+                                   // Aquí entra si castigo es 0 (libre) o 1 (último turno, sale ya)
+                            %>
+                                   🎲 TIRAR DADO
+                            <% } %>
+                        </button>
                     </form>
             
                 <% } else { %>
